@@ -27,10 +27,18 @@ $ make client
 
 Server:
 ```bash
-$ bin/server
+$ make run-server SERVER_PORT=30000
+```
+or
+```bash
+$ ./bin/server 30000
 ```
 
 Client:
 ```bash
-$ bin/client
+$ make run-client SERVER_PORT=30000 CLIENT_NAME=Joselito
+```
+or
+```bash
+$ ./bin/client 30000 Joselito
 ```
