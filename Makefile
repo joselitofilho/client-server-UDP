@@ -17,7 +17,7 @@ all: client server
 
 .PHONY: client
 client: $(SRC_DIR)/client/main.cpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(LIBS) $(SRC_DIR)/client/main.cpp -o $(CLIENT_EXEC)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(LIBS) $(SRC_DIR)/client/*.cpp -o $(CLIENT_EXEC)
 
 .PHONY: server
 server: $(SRC_DIR)/server/main.cpp
