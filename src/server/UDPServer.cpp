@@ -1,6 +1,7 @@
 #include "server/UDPServer.h"
 #include "core/constants.h"
 #include "core/errors.h"
+#include "MessageHandler.h"
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
@@ -52,6 +53,8 @@ void UDPServer::start() const
     std::string requestStr;
     int addressSize = sizeof(struct sockaddr_in);
     struct sockaddr_in clientAddr;
+    MessageHandler messageHandler;
+    Message message = {0};
     std::map<std::string, struct sockaddr_in> loggedUsers;
 
     bzero(requestBuffer, BUF_SIZE);
@@ -69,8 +72,9 @@ void UDPServer::start() const
         }
 
         requestBuffer[nbytes] = '\0';
-        std::cout << "Message: " << requestBuffer;
-        // TODO: message = messageHandler.parseMessage(requestBuffer);
+        message = messageHandler.parseMessage(requestBuffer);
+        std::cout << "From: " << message.username << " - Message: " << message.text << std::endl;
+        // TODO: repository
         // TODO: broadcast(message.text)
     }
 }
