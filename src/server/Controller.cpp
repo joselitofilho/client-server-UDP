@@ -17,13 +17,19 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
     Message responseMessage = {0};
     std::cout << "From: " << requestMessage.username << " - Message: " << requestMessage.text << std::endl;
 
+    if (requestMessage.type == MSG_INVALID_TYPE)
+    {
+        return responseMessage;
+    }
+
+    loggedUsers.insert_or_assign(requestMessage.username, clientAddr);
+
     // TODO: repository
 
     switch (requestMessage.type)
     {
     case MSG_LOGIN_TYPE:
     {
-        loggedUsers.insert_or_assign(requestMessage.username, clientAddr);
         responseMessage = {
             MSG_SEND_TEXT_TYPE,
             "server",
