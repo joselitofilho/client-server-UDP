@@ -40,3 +40,16 @@ TEST(MessageHandlerTest, ParseSendTextMessage)
     EXPECT_EQ("Joselito", message.username);
     EXPECT_EQ("Hi folks.", message.text);
 }
+
+TEST(MessageHandlerTest, ParseRemoveTextMessage)
+{
+    std::string buffer = "_Joselito;25";
+    buffer[0] = MSG_REMOVE_TEXT_TYPE;
+    MessageHandler messageHandler;
+
+    Message message = messageHandler.parseMessage(buffer);
+
+    EXPECT_EQ(MSG_REMOVE_TEXT_TYPE, message.type);
+    EXPECT_EQ("Joselito", message.username);
+    EXPECT_EQ("25", message.text);
+}
