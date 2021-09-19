@@ -34,7 +34,7 @@ server: $(SRC_DIR)/server/*.cpp $(PROGRAMS_DIR)/server/main.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(SRC_DIR)/server/*.cpp $(PROGRAMS_DIR)/server/main.cpp -o $(SERVER_EXEC)
 
 test: $(SRC_DIR)/server/*.cpp $(TEST_DIR)/main.cpp
-	if [ ! -d "$(GTEST_HOME)" ]; then \
+	@if [ ! -d "$(GTEST_HOME)" ]; then \
 		docker exec -it $(CONTAINER_NAME) bash -c \
 			"wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz; \
 			tar xf release-1.8.0.tar.gz; \
