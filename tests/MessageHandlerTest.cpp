@@ -4,8 +4,8 @@
 
 TEST(MessageHandlerTest, ParseLoginMessage)
 {
-    std::string buffer = "_Joselito";
-    buffer[0] = MSG_LOGIN_TYPE;
+    std::string buffer("Joselito");
+    buffer.insert(0, 1, char(MSG_LOGIN_TYPE));
     MessageHandler messageHandler;
 
     Message message = messageHandler.parseMessage(buffer);
@@ -17,8 +17,8 @@ TEST(MessageHandlerTest, ParseLoginMessage)
 
 TEST(MessageHandlerTest, ParseLogoutMessage)
 {
-    std::string buffer = "_Joselito";
-    buffer[0] = MSG_LOGOUT_TYPE;
+    std::string buffer("Joselito");
+    buffer.insert(0, 1, char(MSG_LOGOUT_TYPE));
     MessageHandler messageHandler;
 
     Message message = messageHandler.parseMessage(buffer);
@@ -30,8 +30,8 @@ TEST(MessageHandlerTest, ParseLogoutMessage)
 
 TEST(MessageHandlerTest, ParseSendTextMessage)
 {
-    std::string buffer = "_Joselito;Hi folks.";
-    buffer[0] = MSG_SEND_TEXT_TYPE;
+    std::string buffer("Joselito;Hi folks.");
+    buffer.insert(0, 1, char(MSG_SEND_TEXT_TYPE));
     MessageHandler messageHandler;
 
     Message message = messageHandler.parseMessage(buffer);
@@ -43,8 +43,8 @@ TEST(MessageHandlerTest, ParseSendTextMessage)
 
 TEST(MessageHandlerTest, ParseRemoveTextMessage)
 {
-    std::string buffer = "_Joselito;25";
-    buffer[0] = MSG_REMOVE_TEXT_TYPE;
+    std::string buffer("Joselito;25");
+    buffer.insert(0, 1, char(MSG_REMOVE_TEXT_TYPE));
     MessageHandler messageHandler;
 
     Message message = messageHandler.parseMessage(buffer);
@@ -54,7 +54,7 @@ TEST(MessageHandlerTest, ParseRemoveTextMessage)
     EXPECT_EQ("25", message.text);
 }
 
-TEST(MessageHandlerTest, when_the_message_does_not_comply_with_the_protocol_returns_an_invalid_message)
+TEST(MessageHandlerTest, WhenTheMessageDoesNotComplyWithTheProtocol_ReturnsAnInvalidMessage)
 {
     MessageHandler messageHandler;
 
