@@ -3,9 +3,9 @@
 #include "core/errors.h"
 #include "MessageHandler.h"
 #include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
 #include <map>
+#include <string.h>
+#include <unistd.h>
 
 UDPServer::UDPServer(const std::string &addr_, int port_)
     : addr(addr_), port(port_), socketfd(-1)
@@ -15,6 +15,20 @@ UDPServer::UDPServer(const std::string &addr_, int port_)
 UDPServer::~UDPServer()
 {
     close(socketfd);
+}
+
+void UDPServer::broadcast(std::map<std::string, struct sockaddr_in> &loggedUsers, const char *message) const
+{
+    std::map<std::string, struct sockaddr_in>::iterator it = loggedUsers.begin();
+    while (it != loggedUsers.end())
+    {
+        if (sendto(socketfd, message, strlen(message), 0, (struct sockaddr *)&it->second, sizeof(struct sockaddr)) < 0)
+        {
+            close(socketfd);
+            error("Writing to socket.");
+        }
+        ++it;
+    }
 }
 
 bool UDPServer::init()
@@ -45,23 +59,22 @@ bool UDPServer::init()
     return true;
 }
 
-void UDPServer::start() const
+void UDPServer::start()
 {
     int nbytes;
     char requestBuffer[BUF_SIZE];
-    char responseBuffer[BUF_SIZE + USERNAME_LEN];
-    std::string requestStr;
     int addressSize = sizeof(struct sockaddr_in);
     struct sockaddr_in clientAddr;
     MessageHandler messageHandler;
-    Message message = {0};
+    Message requestMessage = {0};
+    Message responseMessage = {0};
     std::map<std::string, struct sockaddr_in> loggedUsers;
 
     bzero(requestBuffer, BUF_SIZE);
 
     while (1)
     {
-        bzero(responseBuffer, BUF_SIZE + USERNAME_LEN);
+        responseMessage = {0};
 
         if ((nbytes =
                  recvfrom(socketfd, requestBuffer, BUF_SIZE - 1, 0, (struct sockaddr *)&clientAddr,
@@ -72,9 +85,24 @@ void UDPServer::start() const
         }
 
         requestBuffer[nbytes] = '\0';
-        message = messageHandler.parseMessage(requestBuffer);
-        std::cout << "From: " << message.username << " - Message: " << message.text << std::endl;
+        requestMessage = messageHandler.parseMessage(requestBuffer);
+        std::cout << "From: " << requestMessage.username << " - Message: " << requestMessage.text << std::endl;
+
         // TODO: repository
-        // TODO: broadcast(message.text)
+
+        switch (requestMessage.type)
+        {
+        case MSG_LOGIN_TYPE:
+        {
+            loggedUsers.insert_or_assign(requestMessage.username, clientAddr);
+            responseMessage = {
+                MSG_SEND_TEXT_TYPE,
+                "server",
+                requestMessage.username + " is logged in.",
+            };
+            broadcast(loggedUsers, responseMessage.toString().c_str());
+        }
+        break;
+        }
     }
 }

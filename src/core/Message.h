@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 #define MSG_INVALID_TYPE 0
