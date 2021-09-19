@@ -1,20 +1,24 @@
 #include <iostream>
 #include "server/UDPServer.h"
 #include "server/Controller.h"
+#include "server/RedisRepository.h"
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
+    int serverPort;
+
     if (argc < 2)
     {
         cout << "Usage:\n\t" << argv[0] << " <server-port>" << endl;
         exit(EXIT_FAILURE);
     }
+    serverPort = atoi(argv[1]);
 
-    int serverPort = atoi(argv[1]);
+    RedisRepository redisRepository;
 
-    Controller controller;
+    Controller controller(&redisRepository);
 
     UDPServer server("0.0.0.0", serverPort, controller);
     if (!server.init())

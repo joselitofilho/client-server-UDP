@@ -1,8 +1,8 @@
 #include "Controller.h"
 #include "MessageHandler.h"
 
-Controller::Controller()
-    : loggedUsers()
+Controller::Controller(Repository *repository_ = nullptr)
+    : repository(repository_), loggedUsers()
 {
 }
 
@@ -15,7 +15,7 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
     MessageHandler messageHandler;
     Message requestMessage = messageHandler.parseMessage(buffer);
     Message responseMessage = {0};
-    std::cout << "From: " << requestMessage.username << " - Message: " << requestMessage.text << std::endl;
+    std::cout << requestMessage.type << ";" << requestMessage.toString() << std::endl;
 
     if (requestMessage.type == MSG_INVALID_TYPE)
     {
@@ -23,8 +23,6 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
     }
 
     loggedUsers.insert_or_assign(requestMessage.username, clientAddr);
-
-    // TODO: repository
 
     switch (requestMessage.type)
     {
@@ -52,6 +50,12 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
         responseMessage = requestMessage;
     }
     break;
+    }
+
+    if (repository != nullptr)
+    {
+        // TODO: Implement
+        repository->create(responseMessage);
     }
 
     return responseMessage;

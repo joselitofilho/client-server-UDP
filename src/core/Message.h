@@ -14,7 +14,7 @@ struct Message
     std::string username = "";
     std::string text = "";
 
-    std::string toString()
+    std::string toString() const
     {
         return char(type) + username + ";" + text;
     }
