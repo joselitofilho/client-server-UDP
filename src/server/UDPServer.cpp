@@ -3,11 +3,8 @@
 #include "core/errors.h"
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#include <map>
 
 UDPServer::UDPServer(const std::string &addr_, int port_)
     : addr(addr_), port(port_), socketfd(-1)
@@ -52,14 +49,17 @@ void UDPServer::start() const
     int nbytes;
     char requestBuffer[BUF_SIZE];
     char responseBuffer[BUF_SIZE + USERNAME_LEN];
+    std::string requestStr;
     int addressSize = sizeof(struct sockaddr_in);
     struct sockaddr_in clientAddr;
+    std::map<std::string, struct sockaddr_in> loggedUsers;
 
     bzero(requestBuffer, BUF_SIZE);
-    bzero(responseBuffer, BUF_SIZE + USERNAME_LEN);
 
     while (1)
     {
+        bzero(responseBuffer, BUF_SIZE + USERNAME_LEN);
+
         if ((nbytes =
                  recvfrom(socketfd, requestBuffer, BUF_SIZE - 1, 0, (struct sockaddr *)&clientAddr,
                           (unsigned int *)&addressSize)) < 0)
@@ -69,6 +69,8 @@ void UDPServer::start() const
         }
 
         requestBuffer[nbytes] = '\0';
-        std::cout << "Received message: " << requestBuffer;
+        std::cout << "Message: " << requestBuffer;
+        // TODO: message = messageHandler.parseMessage(requestBuffer);
+        // TODO: broadcast(message.text)
     }
 }

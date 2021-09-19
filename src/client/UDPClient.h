@@ -9,10 +9,12 @@ public:
     ~UDPClient();
 
     bool init();
+    void login(const std::string &username);
     void start();
 
 private:
     std::string addr;
+    std::string username;
     int serverPort;
     int socketfd;
     bool stop;

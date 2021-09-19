@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string.h>
 #include "core/constants.h"
-#include "UDPClient.h"
+#include "client/UDPClient.h"
 
 using namespace std;
 
@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    client.login(username);
     client.start();
 
     return EXIT_SUCCESS;

@@ -41,6 +41,19 @@ bool UDPClient::init()
     return true;
 }
 
+void UDPClient::login(const std::string &username_)
+{
+    username = username_;
+    std::string cmdLoginBuffer;
+    cmdLoginBuffer = char(1) + username;
+    if (send(socketfd, cmdLoginBuffer.c_str(), cmdLoginBuffer.size(), 0) < 0)
+    {
+        std::cerr << "Failed to send message." << std::endl;
+        close(socketfd);
+        stop = true;
+    }
+}
+
 void UDPClient::start()
 {
     std::thread senderThread(&UDPClient::sender, this);
