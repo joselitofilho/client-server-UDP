@@ -27,3 +27,16 @@ TEST(MessageHandlerTest, ParseLogoutMessage)
     EXPECT_EQ("Joselito", message.username);
     EXPECT_EQ("", message.text);
 }
+
+TEST(MessageHandlerTest, ParseSendTextMessage)
+{
+    std::string buffer = "_Joselito;Hi folks.";
+    buffer[0] = MSG_SEND_TEXT_TYPE;
+    MessageHandler messageHandler;
+
+    Message message = messageHandler.parseMessage(buffer);
+
+    EXPECT_EQ(MSG_SEND_TEXT_TYPE, message.type);
+    EXPECT_EQ("Joselito", message.username);
+    EXPECT_EQ("Hi folks.", message.text);
+}
