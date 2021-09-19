@@ -11,4 +11,9 @@ struct Message
     int type = MSG_INVALID_TYPE;
     std::string username = "";
     std::string text = "";
+
+    std::string toString()
+    {
+        return char(type) + username + ";" + text;
+    }
 };

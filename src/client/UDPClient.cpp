@@ -1,5 +1,6 @@
 #include "client/UDPClient.h"
 #include "core/constants.h"
+#include "core/Message.h"
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
@@ -67,18 +68,26 @@ void UDPClient::start()
 
 void UDPClient::sender()
 {
-    char sendBuffer[BUF_SIZE];
+    char buffer[BUF_SIZE];
+    Message message = {0};
+    std::string sendBuffer;
 
     while (!stop)
     {
-        bzero(sendBuffer, BUF_SIZE);
-        fgets(sendBuffer, BUF_SIZE, stdin);
+        bzero(buffer, BUF_SIZE);
+        fgets(buffer, BUF_SIZE, stdin);
+        buffer[strcspn(buffer, "\r\n")] = 0; // works for LF, CR, CRLF, LFCR, ...
 
-        if (send(socketfd, sendBuffer, strlen(sendBuffer), 0) < 0)
+        message = {
+            MSG_SEND_TEXT_TYPE,
+            username,
+            buffer,
+        };
+        sendBuffer = message.toString();
+
+        if (send(socketfd, sendBuffer.c_str(), sendBuffer.size(), 0) < 0)
         {
             std::cerr << "Failed to send message." << std::endl;
-            close(socketfd);
-            stop = true;
         }
     }
 }
@@ -96,8 +105,7 @@ void UDPClient::receiver()
         if ((nbytes = recv(socketfd, receiveBuffer, BUF_SIZE - 1, 0)) < 0)
         {
             std::cerr << "Failed receiving message." << std::endl;
-            close(socketfd);
-            stop = true;
+            return;
         }
 
         receiveBuffer[nbytes] = '\0';
