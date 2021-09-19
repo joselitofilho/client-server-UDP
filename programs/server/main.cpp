@@ -1,5 +1,6 @@
 #include <iostream>
 #include "server/UDPServer.h"
+#include "server/Controller.h"
 
 using namespace std;
 
@@ -12,10 +13,12 @@ int main(int argc, char *argv[])
     }
 
     int serverPort = atoi(argv[1]);
-    
 
-    UDPServer server("0.0.0.0", serverPort);
-    if (!server.init()) {
+    Controller controller;
+
+    UDPServer server("0.0.0.0", serverPort, controller);
+    if (!server.init())
+    {
         exit(EXIT_FAILURE);
     }
 

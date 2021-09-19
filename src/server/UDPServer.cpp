@@ -1,34 +1,19 @@
 #include "server/UDPServer.h"
 #include "core/constants.h"
 #include "core/errors.h"
-#include "MessageHandler.h"
 #include <arpa/inet.h>
 #include <map>
 #include <string.h>
 #include <unistd.h>
 
-UDPServer::UDPServer(const std::string &addr_, int port_)
-    : addr(addr_), port(port_), socketfd(-1)
+UDPServer::UDPServer(const std::string &addr_, int port_, Controller &controller_)
+    : addr(addr_), port(port_), socketfd(-1), controller(controller_)
 {
 }
 
 UDPServer::~UDPServer()
 {
     close(socketfd);
-}
-
-void UDPServer::broadcast(std::map<std::string, struct sockaddr_in> &loggedUsers, const char *message) const
-{
-    std::map<std::string, struct sockaddr_in>::iterator it = loggedUsers.begin();
-    while (it != loggedUsers.end())
-    {
-        if (sendto(socketfd, message, strlen(message), 0, (struct sockaddr *)&it->second, sizeof(struct sockaddr)) < 0)
-        {
-            close(socketfd);
-            error("Writing to socket.");
-        }
-        ++it;
-    }
 }
 
 bool UDPServer::init()
@@ -65,16 +50,11 @@ void UDPServer::start()
     char requestBuffer[BUF_SIZE];
     int addressSize = sizeof(struct sockaddr_in);
     struct sockaddr_in clientAddr;
-    MessageHandler messageHandler;
-    Message requestMessage = {0};
     Message responseMessage = {0};
-    std::map<std::string, struct sockaddr_in> loggedUsers;
-
-    bzero(requestBuffer, BUF_SIZE);
 
     while (1)
     {
-        responseMessage = {0};
+        bzero(requestBuffer, BUF_SIZE);
 
         if ((nbytes =
                  recvfrom(socketfd, requestBuffer, BUF_SIZE - 1, 0, (struct sockaddr *)&clientAddr,
@@ -85,29 +65,25 @@ void UDPServer::start()
         }
 
         requestBuffer[nbytes] = '\0';
-        requestMessage = messageHandler.parseMessage(requestBuffer);
-        std::cout << "From: " << requestMessage.username << " - Message: " << requestMessage.text << std::endl;
 
-        // TODO: repository
+        responseMessage = controller.onRequestHandle(requestBuffer, clientAddr);
+        if (responseMessage.type != MSG_INVALID_TYPE)
+        {
+            broadcast(controller.getLoggedUsers(), responseMessage.toString().c_str());
+        }
+    }
+}
 
-        switch (requestMessage.type)
+void UDPServer::broadcast(const SocketUsers &loggedUsers, const char *buffer) const
+{
+    std::map<std::string, struct sockaddr_in>::const_iterator it = loggedUsers.begin();
+    while (it != loggedUsers.end())
+    {
+        if (sendto(socketfd, buffer, strlen(buffer), 0, (struct sockaddr *)&it->second, sizeof(struct sockaddr)) < 0)
         {
-        case MSG_LOGIN_TYPE:
-        {
-            loggedUsers.insert_or_assign(requestMessage.username, clientAddr);
-            responseMessage = {
-                MSG_SEND_TEXT_TYPE,
-                "server",
-                requestMessage.username + " is logged in.",
-            };
-            broadcast(loggedUsers, responseMessage.toString().c_str());
+            close(socketfd);
+            error("Writing to socket.");
         }
-        break;
-        case MSG_SEND_TEXT_TYPE:
-        {
-            broadcast(loggedUsers, requestMessage.toString().c_str());
-        }
-        break;
-        }
+        ++it;
     }
 }
