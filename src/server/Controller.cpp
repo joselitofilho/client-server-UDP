@@ -37,6 +37,16 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
         };
     }
     break;
+    case MSG_LOGOUT_TYPE:
+    {
+        loggedUsers.erase(requestMessage.username);
+        responseMessage = {
+            MSG_LOGOUT_TYPE,
+            "server",
+            requestMessage.username + " is logged out.",
+        };
+    }
+    break;
     case MSG_SEND_TEXT_TYPE:
     {
         responseMessage = requestMessage;
