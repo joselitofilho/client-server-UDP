@@ -103,6 +103,11 @@ void UDPServer::start()
             broadcast(loggedUsers, responseMessage.toString().c_str());
         }
         break;
+        case MSG_SEND_TEXT_TYPE:
+        {
+            broadcast(loggedUsers, requestMessage.toString().c_str());
+        }
+        break;
         }
     }
 }
