@@ -21,13 +21,20 @@ Message MessageHandler::parseMessage(std::string buffer) const
         {
         case MSG_LOGIN_TYPE:
         case MSG_LOGOUT_TYPE:
+        {
             message.username = buffer;
-            break;
+        }
+        break;
         case MSG_SEND_TEXT_TYPE:
         case MSG_REMOVE_TEXT_TYPE:
+        {
             int separatorPosition = buffer.find_first_of(';');
             message.username = buffer.substr(0, separatorPosition);
             message.text = buffer.substr(separatorPosition + 1);
+        }
+        break;
+        default:
+            message.type = MSG_INVALID_TYPE;
             break;
         }
     }

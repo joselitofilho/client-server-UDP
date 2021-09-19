@@ -1,5 +1,6 @@
 #include <string>
 
+#define MSG_INVALID_TYPE 0
 #define MSG_LOGIN_TYPE 1
 #define MSG_LOGOUT_TYPE 2
 #define MSG_SEND_TEXT_TYPE 3
@@ -7,7 +8,7 @@
 
 struct Message
 {
-    int type = 0;
+    int type = MSG_INVALID_TYPE;
     std::string username = "";
     std::string text = "";
 };

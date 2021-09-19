@@ -53,3 +53,14 @@ TEST(MessageHandlerTest, ParseRemoveTextMessage)
     EXPECT_EQ("Joselito", message.username);
     EXPECT_EQ("25", message.text);
 }
+
+TEST(MessageHandlerTest, when_the_message_does_not_comply_with_the_protocol_returns_an_invalid_message)
+{
+    MessageHandler messageHandler;
+
+    Message message = messageHandler.parseMessage("Any message.");
+
+    EXPECT_EQ(MSG_INVALID_TYPE, message.type);
+    EXPECT_EQ("", message.username);
+    EXPECT_EQ("", message.text);
+}

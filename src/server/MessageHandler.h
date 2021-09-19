@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include "Message.h"
+#include "core/Message.h"
 
 class MessageHandler
 {
