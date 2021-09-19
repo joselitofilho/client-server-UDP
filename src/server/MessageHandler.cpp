@@ -18,6 +18,7 @@ Message MessageHandler::parseMessage(std::string buffer) const
         switch (action)
         {
         case MSG_LOGIN_TYPE:
+        case MSG_LOGOUT_TYPE:
             buffer.erase(buffer.begin(), buffer.begin() + 1);
             message.username = buffer;
             break;
