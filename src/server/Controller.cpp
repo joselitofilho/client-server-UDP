@@ -50,7 +50,7 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
         responseMessage = {
             type: requestMessage.type,
             from: requestMessage.username,
-            text: requestMessage.username + " is logged out.",
+            text: requestMessage.text,
         };
     }
     break;
@@ -58,8 +58,10 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
 
     if (repository != nullptr)
     {
-        // TODO: Implement
-        repository->create(responseMessage);
+        if (!repository->create(responseMessage)) {
+            std::cerr << "Failed to save message: " << responseMessage.toString() << std::endl;
+            return {0};
+        }
     }
 
     return responseMessage;

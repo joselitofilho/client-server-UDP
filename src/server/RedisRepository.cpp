@@ -1,4 +1,6 @@
 #include "RedisRepository.h"
+#include <iostream>
+#include <cstring>
 
 RedisRepository::RedisRepository(const std::string &addr_, int port_)
     : addr(addr_), port(port_), redisCtx(nullptr)
@@ -36,17 +38,32 @@ bool RedisRepository::init()
     return isOK;
 }
 
-std::map<unsigned int, Message> RedisRepository::all()
+std::map<long long, Message> RedisRepository::all()
 {
     // TODO: Implements
-    return std::map<unsigned int, Message>();
+    return std::map<long long, Message>();
 }
 
-unsigned int RedisRepository::create(const Message &message)
+bool RedisRepository::create(Message &message)
 {
-    // TODO: Implements
-    std::cout << "RedisRepository::create::" << message.toString() << std::endl;
-    return 0;
+    bool isOk = false;
+
+    message.createdAt = std::time(0);
+
+    std::stringstream ssCommand;
+    ssCommand << std::to_string(message.type) << ";"
+              << message.createdAt << ";"
+              << message.from << ";"
+              << message.text;
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, "LPUSH messages %s", ssCommand.str().c_str());
+    if (reply)
+    {
+        message.id = reply->integer;
+        isOk = message.id > 0ll;
+    }
+    freeReplyObject(reply);
+
+    return isOk;
 }
 
 void RedisRepository::clear()
@@ -54,7 +71,7 @@ void RedisRepository::clear()
     // TODO: Implements
 }
 
-void RedisRepository::remove(unsigned int id)
+void RedisRepository::remove(long long id)
 {
     // TODO: Implements
     std::cout << "RedisRepository::remove::" << id << std::endl;

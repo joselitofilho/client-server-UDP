@@ -2,6 +2,7 @@
 
 #include <string>
 #include <ctime>
+#include <sstream>
 
 #define MSG_INVALID_TYPE 0
 #define MSG_LOGIN_TYPE 1
@@ -21,17 +22,22 @@ struct MessageRequest
     }
 };
 
-
 struct Message
 {
-    unsigned int id = 0;
+    long long id = 0ll;
     int type = MSG_INVALID_TYPE;
-    std::time_t createdAt = std::time(nullptr);
+    std::time_t createdAt = std::time(0);
     std::string from = "";
     std::string text = "";
 
     std::string toString() const
     {
-        return std::to_string(id) + ";" + char(type) + ";" + std::asctime(std::localtime(&createdAt)) + ";" + from + ";" + text;
+        std::stringstream ss;
+        ss << std::to_string(id) << ";"
+           << std::to_string(type) << ";"
+           << createdAt << ";"
+           << from << ";"
+           << text;
+        return ss.str();
     }
 };

@@ -11,10 +11,10 @@ public:
 
     bool init();
 
-    std::map<unsigned int, Message> all();
-    unsigned int create(const Message &message);
+    std::map<long long, Message> all();
+    bool create(Message &message);
     void clear();
-    void remove(unsigned int id);
+    void remove(long long id);
 
 private:
     const std::string addr;
