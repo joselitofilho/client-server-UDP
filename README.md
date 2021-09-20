@@ -45,8 +45,6 @@ $ ./bin/client 30000 Joselito
 
 ## Test
 ```bash
-$ docker build -t cpp-dev .
-$ docker run -v `pwd`:/src -w /src --label com.docker.compose.project=development -itd 
 $ make test
 $ make run-test
 ```

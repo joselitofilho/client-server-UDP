@@ -9,13 +9,13 @@ TEST_DIR = ./tests
 PROGRAMS_DIR = ./programs
 INCLUDE_PATHS = -I$(SRC_DIR)
 
-GTEST_HOME = $(LIBS_DIR)/gtest
-GTEST_LIBRARY_PATH = $(GTEST_HOME)/lib
-GTESTFLAGS = -I$(GTEST_HOME)/include -L$(GTEST_LIBRARY_PATH) -lgtest -lgtest_main -pthread
-
 HIREDIS_HOME = $(LIBS_DIR)/hiredis
 HIREDIS_LIBRARY_PATH = $(HIREDIS_HOME)/lib
 HIREDISFLAGS = -I$(HIREDIS_HOME)/include -L$(HIREDIS_LIBRARY_PATH) -lhiredis
+
+GTEST_HOME = $(LIBS_DIR)/gtest
+GTEST_LIBRARY_PATH = $(GTEST_HOME)/lib
+GTESTFLAGS = -I$(GTEST_HOME)/include -L$(GTEST_LIBRARY_PATH) -lgtest -lgtest_main -pthread
 
 CLIENT_EXEC = $(BIN_DIR)/client
 SERVER_EXEC = $(BIN_DIR)/server
@@ -24,42 +24,51 @@ TEST_EXEC = $(BIN_DIR)/tests
 IMAGE_NAME = cpp-dev
 CONTAINER_NAME = client-server-udp
 
+DOCKER_EXEC = docker exec -it $(CONTAINER_NAME) bash -c
+
 SERVER_PORT = 30000
 
-.PHONY: all build client server test run-client run-server run-test clean gtest hiredis redis
+.PHONY: all build containers cpp-dev client server test run-client run-server run-test clean gtest hiredis redis
 
 all: build
 
 build: client server containers
 
+CPP_DEV_RUNNING = $(shell docker ps -a | grep $(CONTAINER_NAME) | wc -l)
 containers:
-	docker build -t $(IMAGE_NAME) .
-#	docker run -v $(shell pwd):/src -w /src --label com.docker.compose.project=development --network=host --rm -itd --name $(CONTAINER_NAME) $(IMAGE_NAME)
+	if [ $(CPP_DEV_RUNNING) -eq 0 ]; then \
+		docker build -t $(IMAGE_NAME) . ; \
+	fi
+
+cpp-dev: containers
+	if [ $(CPP_DEV_RUNNING) -eq 0 ]; then \
+		docker run -v $(pwd):/src -w /src --label com.docker.compose.project=development --network=host --rm -itd --name $(CONTAINER_NAME) $(IMAGE_NAME); \
+	fi
 
 client: $(SRC_DIR)/client/*.cpp $(PROGRAMS_DIR)/client/main.cpp
-	docker exec -it $(CONTAINER_NAME) bash -c "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(LIBS) $(SRC_DIR)/client/*.cpp $(PROGRAMS_DIR)/client/main.cpp -o $(CLIENT_EXEC)"
+	$(DOCKER_EXEC) "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(LIBS) $(SRC_DIR)/client/*.cpp $(PROGRAMS_DIR)/client/main.cpp -o $(CLIENT_EXEC)"
 
 server: $(SRC_DIR)/server/*.cpp $(PROGRAMS_DIR)/server/main.cpp redis
-	docker exec -it $(CONTAINER_NAME) bash -c "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(HIREDISFLAGS) $(SRC_DIR)/server/*.cpp $(PROGRAMS_DIR)/server/main.cpp -o $(SERVER_EXEC)"
+	$(DOCKER_EXEC) "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(HIREDISFLAGS) $(SRC_DIR)/server/*.cpp $(PROGRAMS_DIR)/server/main.cpp -o $(SERVER_EXEC)"
 
 test: $(SRC_DIR)/server/*.cpp $(TEST_DIR)/main.cpp gtest
-	docker exec -it $(CONTAINER_NAME) bash -c "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(GTESTFLAGS) $(SRC_DIR)/server/*.cpp $(TEST_DIR)/*.cpp -o $(TEST_EXEC)"
+	$(DOCKER_EXEC) "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(HIREDISFLAGS) $(GTESTFLAGS) $(SRC_DIR)/server/*.cpp $(TEST_DIR)/*.cpp -o $(TEST_EXEC)"
 
 run-client: $(CLIENT_EXEC)
-	docker exec -it $(CONTAINER_NAME) bash -c "$(CLIENT_EXEC) $(SERVER_PORT) $(CLIENT_NAME)"
+	$(DOCKER_EXEC) "$(CLIENT_EXEC) $(SERVER_PORT) $(CLIENT_NAME)"
 
 run-server: $(SERVER_EXEC)
-	docker exec -it $(CONTAINER_NAME) bash -c "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH) $(SERVER_EXEC) $(SERVER_PORT)"
+	$(DOCKER_EXEC) "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH) $(SERVER_EXEC) $(SERVER_PORT)"
 
 run-test: $(TEST_EXEC)
-	docker exec -it $(CONTAINER_NAME) bash -c "LD_LIBRARY_PATH=$(GTEST_LIBRARY_PATH) $(TEST_EXEC)"
+	$(DOCKER_EXEC) "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH):$(GTEST_LIBRARY_PATH) $(TEST_EXEC)"
 
 clean:
 	rm -rf $(CLIENT_EXEC) $(SERVER_EXEC) $(TEST_EXEC) *.o
 
-gtest:
+gtest: cpp-dev
 	if [ ! -d "$(GTEST_HOME)" ]; then \
-		docker exec -it $(CONTAINER_NAME) bash -c \
+		$(DOCKER_EXEC) \
 			"wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz; \
 			tar xf release-1.8.0.tar.gz; \
 			rm release-1.8.0.tar.gz; \
@@ -74,9 +83,9 @@ gtest:
 			rm -r googletest-release-1.8.0/;"; \
     fi
 
-hiredis:
+hiredis: cpp-dev
 	if [ ! -d "$(HIREDIS_HOME)" ]; then \
-		docker exec -it $(CONTAINER_NAME) bash -c \
+		$(DOCKER_EXEC) \
 			"git clone https://github.com/redis/hiredis.git; \
 			mkdir -p ./libs/hiredis; \
 			cd hiredis; \
