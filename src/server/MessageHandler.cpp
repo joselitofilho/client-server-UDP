@@ -8,9 +8,9 @@ MessageHandler::~MessageHandler()
 {
 }
 
-Message MessageHandler::parseMessage(std::string buffer) const
+MessageRequest MessageHandler::parseMessage(std::string buffer) const
 {
-    Message message = {0};
+    MessageRequest message = {0};
 
     if (buffer.size() > 0)
     {

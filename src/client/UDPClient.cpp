@@ -69,7 +69,7 @@ void UDPClient::start()
 void UDPClient::sender()
 {
     char buffer[BUF_SIZE];
-    Message message = {0};
+    MessageRequest message = {0};
     std::string sendBuffer;
 
     while (!stop)

@@ -13,25 +13,25 @@ Controller::~Controller()
 Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_in clientAddr)
 {
     MessageHandler messageHandler;
-    Message requestMessage = messageHandler.parseMessage(buffer);
-    Message responseMessage = {0};
+    MessageRequest requestMessage = messageHandler.parseMessage(buffer);
+    
     std::cout << requestMessage.type << ";" << requestMessage.toString() << std::endl;
-
     if (requestMessage.type == MSG_INVALID_TYPE)
     {
-        return responseMessage;
+        return {0};
     }
 
     loggedUsers.insert_or_assign(requestMessage.username, clientAddr);
 
+    Message responseMessage = {0};
     switch (requestMessage.type)
     {
     case MSG_LOGIN_TYPE:
     {
         responseMessage = {
-            MSG_SEND_TEXT_TYPE,
-            "server",
-            requestMessage.username + " is logged in.",
+            type: MSG_SEND_TEXT_TYPE,
+            from: "server",
+            text: requestMessage.username + " is logged in.",
         };
     }
     break;
@@ -39,15 +39,19 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
     {
         loggedUsers.erase(requestMessage.username);
         responseMessage = {
-            MSG_LOGOUT_TYPE,
-            "server",
-            requestMessage.username + " is logged out.",
+            type: MSG_LOGOUT_TYPE,
+            from: "server",
+            text: requestMessage.username + " is logged out.",
         };
     }
     break;
     case MSG_SEND_TEXT_TYPE:
     {
-        responseMessage = requestMessage;
+        responseMessage = {
+            type: requestMessage.type,
+            from: requestMessage.username,
+            text: requestMessage.username + " is logged out.",
+        };
     }
     break;
     }

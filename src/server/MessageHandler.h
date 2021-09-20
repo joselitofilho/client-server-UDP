@@ -9,5 +9,5 @@ public:
     MessageHandler();
     ~MessageHandler();
 
-    Message parseMessage(std::string msg) const;
+    MessageRequest parseMessage(std::string msg) const;
 };
