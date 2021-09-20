@@ -16,7 +16,11 @@ int main(int argc, char *argv[])
     }
     serverPort = atoi(argv[1]);
 
-    RedisRepository redisRepository;
+    RedisRepository redisRepository("127.0.0.1", 6379);
+    if (!redisRepository.init())
+    {
+        exit(EXIT_FAILURE);
+    }
 
     Controller controller(&redisRepository);
 

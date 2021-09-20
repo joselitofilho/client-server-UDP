@@ -34,3 +34,4 @@ bin/*
 
 # Project
 libs/gtest/*
+libs/hiredis/*
