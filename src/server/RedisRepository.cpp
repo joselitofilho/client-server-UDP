@@ -68,7 +68,8 @@ bool RedisRepository::create(Message &message)
 
 void RedisRepository::clear()
 {
-    // TODO: Implements
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, "DEL messages");
+    freeReplyObject(reply);
 }
 
 void RedisRepository::remove(long long id)

@@ -58,7 +58,9 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
 
     if (repository != nullptr)
     {
-        if (!repository->create(responseMessage)) {
+        if (requestMessage.type == MSG_LOGOUT_TYPE && loggedUsers.empty()) {
+            repository->clear();
+        } else if (!repository->create(responseMessage)) {
             std::cerr << "Failed to save message: " << responseMessage.toString() << std::endl;
             return {0};
         }
