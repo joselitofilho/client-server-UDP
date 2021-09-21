@@ -1,5 +1,4 @@
 #include "Controller.h"
-#include "MessageHandler.h"
 
 Controller::Controller(Repository *repository_ = nullptr)
     : repository(repository_), loggedUsers()
@@ -20,8 +19,8 @@ Messages Controller::getMessages() const
 
 Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_in clientAddr)
 {
-    MessageHandler messageHandler;
-    MessageRequest requestMessage = messageHandler.parseMessage(buffer);
+    MessageRequest requestMessage = {0};
+    requestMessage.fromString(buffer);
 
     if (requestMessage.type == MSG_INVALID_TYPE)
         return {0};

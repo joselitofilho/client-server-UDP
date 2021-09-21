@@ -22,6 +22,36 @@ struct MessageRequest
     {
         return char(type) + username + ";" + text;
     }
+
+    void fromString(std::string buffer)
+    {
+        if (buffer.size() > 0)
+        {
+            type = (int)buffer[0];
+            buffer.erase(buffer.begin(), buffer.begin() + 1);
+
+            switch (type)
+            {
+            case MSG_LOGIN_TYPE:
+            case MSG_LOGOUT_TYPE:
+            {
+                username = buffer;
+            }
+            break;
+            case MSG_SEND_TEXT_TYPE:
+            case MSG_REMOVE_TEXT_TYPE:
+            {
+                int separatorPosition = buffer.find_first_of(';');
+                username = buffer.substr(0, separatorPosition);
+                text = buffer.substr(separatorPosition + 1);
+            }
+            break;
+            default:
+                type = MSG_INVALID_TYPE;
+                break;
+            }
+        }
+    }
 };
 
 struct Message
@@ -48,24 +78,24 @@ struct Message
         int start = 0, end = 0;
 
         end = buffer.find(';', start);
-        id = std::stoll(buffer.substr(start, end-start));
+        id = std::stoll(buffer.substr(start, end - start));
         start = end + 1;
 
         end = buffer.find(';', start);
-        type = atoi(buffer.substr(start, end-start).c_str());
+        type = atoi(buffer.substr(start, end - start).c_str());
         start = end + 1;
 
         end = buffer.find(';', start);
         std::stringstream ss;
-        ss << buffer.substr(start, end-start);
+        ss << buffer.substr(start, end - start);
         ss >> createdAt;
         ss.str("");
         start = end + 1;
 
         end = buffer.find(';', start);
-        from = buffer.substr(start, end-start);
+        from = buffer.substr(start, end - start);
         start = end + 1;
-        
+
         text = buffer.substr(start);
     }
 };
