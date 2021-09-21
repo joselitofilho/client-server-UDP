@@ -14,13 +14,15 @@ public:
     void start();
 
 private:
+    void sender();
+    void receiver();
+    std::string parseCommand(const std::string &username, std::string buffer) const;
+
+private:
     std::string addr;
     std::string username;
     int serverPort;
     int socketfd;
     bool stop;
-    Messages messages;
-
-    void sender();
-    void receiver();
+    std::map<long long, Message> messages;
 };

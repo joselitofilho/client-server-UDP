@@ -5,16 +5,12 @@
 #include <sstream>
 #include <iostream>
 #include <map>
-#include <utility>
 
 #define MSG_INVALID_TYPE 0
 #define MSG_LOGIN_TYPE 1
 #define MSG_LOGOUT_TYPE 2
 #define MSG_SEND_TEXT_TYPE 3
 #define MSG_REMOVE_TEXT_TYPE 4
-
-typedef long long ID;
-typedef long long DatabaseID;
 
 struct MessageRequest
 {
@@ -60,7 +56,7 @@ struct MessageRequest
 
 struct Message
 {
-    ID id = 0ll;
+    long long id = 0ll;
     int type = MSG_INVALID_TYPE;
     std::time_t createdAt = std::time(0);
     std::string from = "";
@@ -104,4 +100,4 @@ struct Message
     }
 };
 
-typedef std::map<ID, std::pair<DatabaseID, Message> > Messages;
+typedef std::map<long long, Message> Messages;

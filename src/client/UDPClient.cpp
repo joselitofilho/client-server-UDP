@@ -45,8 +45,7 @@ bool UDPClient::init()
 void UDPClient::login(const std::string &username_)
 {
     username = username_;
-    std::string cmdLoginBuffer;
-    cmdLoginBuffer = char(1) + username;
+    std::string cmdLoginBuffer(char(MSG_LOGIN_TYPE) + username);
     if (send(socketfd, cmdLoginBuffer.c_str(), cmdLoginBuffer.size(), 0) < 0)
     {
         std::cerr << "Failed to send message." << std::endl;
@@ -76,19 +75,17 @@ void UDPClient::sender()
     {
         bzero(buffer, BUF_SIZE);
         fgets(buffer, BUF_SIZE, stdin);
-        buffer[strcspn(buffer, "\r\n")] = 0; // works for LF, CR, CRLF, LFCR, ...
+        buffer[strcspn(buffer, "\r\n")] = 0; // Clear EOL. Works for LF, CR, CRLF, LFCR, ...
 
-        message = {
-            MSG_SEND_TEXT_TYPE,
-            username,
-            buffer,
-        };
-        sendBuffer = message.toString();
+        sendBuffer = parseCommand(username, buffer);
 
         if (send(socketfd, sendBuffer.c_str(), sendBuffer.size(), 0) < 0)
         {
             std::cerr << "Failed to send message." << std::endl;
         }
+
+        if (strcmp(buffer, ":exit") == 0)
+            stop = true;
     }
 }
 
@@ -96,7 +93,7 @@ void UDPClient::receiver()
 {
     char receiveBuffer[BUF_SIZE];
     int nbytes;
-    Messages::const_iterator it;
+    std::map<long long, Message>::const_iterator it;
 
     while (!stop)
     {
@@ -112,15 +109,48 @@ void UDPClient::receiver()
         receiveBuffer[nbytes] = '\0';
         Message message;
         message.fromString(std::string(receiveBuffer));
+
+        if (message.type == MSG_LOGOUT_TYPE && stop)
+        {
+            std::cout << "Have a nice day. Bye! :D\n"
+            return;
+        }
+
         messages.insert_or_assign(message.id, message);
 
-        std::cout << std::string(100, '\n');
+        std::cout << std::string(100, '\n'); // Clear terminal.
 
         it = messages.begin();
         while (it != messages.end())
         {
-            std::cout << it->second.from << ": " << it->second.text << std::endl;
+            std::cout << it->second.id << " - " << it->second.from << ": " << it->second.text << std::endl;
             ++it;
         }
     }
+}
+
+std::string UDPClient::parseCommand(const std::string &username, std::string buffer) const
+{
+    MessageRequest message = {0};
+
+    if (buffer == ":exit")
+        return char(MSG_LOGOUT_TYPE) + username;
+    else if (buffer[0] == ':')
+    {
+        message = {
+            MSG_REMOVE_TEXT_TYPE,
+            username,
+            buffer.substr(1),
+        };
+    }
+    else
+    {
+        message = {
+            MSG_SEND_TEXT_TYPE,
+            username,
+            buffer,
+        };
+    }
+
+    return message.toString();
 }

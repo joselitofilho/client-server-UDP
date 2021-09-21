@@ -18,7 +18,7 @@ public:
     Messages all();
     long long create(Message &message);
     void clear();
-    void remove(long long id);
+    bool remove(const Message &message);
 
 private:
     long long nextKey() const;

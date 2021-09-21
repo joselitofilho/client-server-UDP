@@ -77,10 +77,8 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
         {
             auto messages = getMessages();
             auto messageID = std::stoll(requestMessage.text);
-            auto message = messages[messageID].second;
-            if (message.from == requestMessage.username)
-                repository->remove(messages[messageID].first);
-            else
+            auto message = messages[messageID];
+            if (!(message.from == requestMessage.username && repository->remove(message)))
                 return {0};
         }
         else

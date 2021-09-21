@@ -50,7 +50,7 @@ Messages RedisRepository::all()
             {
                 message = {0};
                 message.fromString(reply->element[i]->str);
-                messages.insert_or_assign(message.id, std::make_pair(i, message));
+                messages.insert_or_assign(message.id, message);
             }
         }
     }
@@ -82,11 +82,16 @@ void RedisRepository::clear()
     freeReplyObject(reply);
 }
 
-void RedisRepository::remove(long long id)
+bool RedisRepository::remove(const Message &message)
 {
-    std::string command("DEL messages " + std::to_string(id));
-    redisReply *reply = (redisReply *)redisCommand(redisCtx, command.c_str());
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, "LREM messages 1 %s", message.toString().c_str());
+    bool isOk = false;
+    if (reply) {
+        isOk = reply->integer == 1ll;
+    }
     freeReplyObject(reply);
+
+    return isOk;
 }
 
 long long RedisRepository::nextKey() const
