@@ -51,6 +51,7 @@ void UDPServer::start()
     int addressSize = sizeof(struct sockaddr_in);
     struct sockaddr_in clientAddr;
     Message responseMessage = {0};
+    Messages messages = controller.getMessages();
 
     while (1)
     {
@@ -60,8 +61,9 @@ void UDPServer::start()
                  recvfrom(socketfd, requestBuffer, BUF_SIZE - 1, 0, (struct sockaddr *)&clientAddr,
                           (unsigned int *)&addressSize)) < 0)
         {
+            std::cerr << "Reading data from socket." << std::endl;
             close(socketfd);
-            error("Reading data from socket.");
+            exit(EXIT_FAILURE);
         }
 
         requestBuffer[nbytes] = '\0';
@@ -73,7 +75,8 @@ void UDPServer::start()
 
             if (responseMessage.type == MSG_LOGIN_TYPE)
             {
-                sendMessages(controller.getMessages(), clientAddr);
+                messages = controller.getMessages();
+                sendMessages(messages, clientAddr);
             }
         }
     }
@@ -98,7 +101,7 @@ void UDPServer::sendMessages(const Messages &messages, struct sockaddr_in client
     Messages::const_iterator it = messages.begin();
     while (it != messages.end())
     {
-        std::string buffer = it->second.toString();
+        auto buffer = it->second.second.toString();
         if (sendto(socketfd, buffer.c_str(), buffer.size(), 0, (struct sockaddr *)&clientAddr, sizeof(struct sockaddr)) < 0)
         {
             close(socketfd);

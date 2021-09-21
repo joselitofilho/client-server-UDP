@@ -30,11 +30,7 @@ bool RedisRepository::init()
         }
     }
 
-    redisReply *reply = (redisReply *)redisCommand(redisCtx, "PING");
-    bool isOK = std::string(reply->str) == "PONG";
-    freeReplyObject(reply);
-
-    return isOK;
+    return ping();
 }
 
 Messages RedisRepository::all()
@@ -54,7 +50,7 @@ Messages RedisRepository::all()
             {
                 message = {0};
                 message.fromString(reply->element[i]->str);
-                messages.insert_or_assign(i, message);
+                messages.insert_or_assign(message.id, std::make_pair(i, message));
             }
         }
     }
@@ -88,8 +84,9 @@ void RedisRepository::clear()
 
 void RedisRepository::remove(long long id)
 {
-    // TODO: Implements
-    std::cout << "RedisRepository::remove::" << id << std::endl;
+    std::string command("DEL messages " + std::to_string(id));
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, command.c_str());
+    freeReplyObject(reply);
 }
 
 long long RedisRepository::nextKey() const
@@ -97,11 +94,18 @@ long long RedisRepository::nextKey() const
     long long nextKey = 0ll;
     redisReply *reply = (redisReply *)redisCommand(redisCtx, "INCR counter");
     if (reply)
-    {
         nextKey = reply->integer;
-    }
     freeReplyObject(reply);
     return nextKey;
+}
+
+bool RedisRepository::ping() const
+{
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, "PING");
+    bool isOK = std::string(reply->str) == "PONG";
+    freeReplyObject(reply);
+
+    return isOK;
 }
 
 void RedisRepository::trim() const

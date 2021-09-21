@@ -11,6 +11,7 @@ public:
 
     bool init();
 
+public:
     /**
      * Repository interface
      */
@@ -20,12 +21,14 @@ public:
     void remove(long long id);
 
 private:
+    long long nextKey() const;
+    bool ping() const;
+    int rangeStop() const;
+    void trim() const;
+
+private:
     const std::string addr;
     int port;
     int capacity;
     redisContext *redisCtx;
-
-    long long nextKey() const;
-    int rangeStop() const;
-    void trim() const;
 };

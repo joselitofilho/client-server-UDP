@@ -58,18 +58,34 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
         };
     }
     break;
+    case MSG_REMOVE_TEXT_TYPE:
+    {
+        responseMessage = {
+            type : MSG_REMOVE_TEXT_TYPE,
+            from : "server",
+            text : requestMessage.username + " removed ID=" + requestMessage.text,
+        };
+    }
+    break;
     }
 
     if (repository != nullptr)
     {
         if (requestMessage.type == MSG_LOGOUT_TYPE && loggedUsers.empty())
-        {
             repository->clear();
+        else if (requestMessage.type == MSG_REMOVE_TEXT_TYPE)
+        {
+            auto messages = getMessages();
+            auto messageID = std::stoll(requestMessage.text);
+            auto message = messages[messageID].second;
+            if (message.from == requestMessage.username)
+                repository->remove(messages[messageID].first);
+            else
+                return {0};
         }
         else
         {
-            long long redisId = repository->create(responseMessage);
-            if (!redisId)
+            if (!repository->create(responseMessage))
             {
                 std::cerr << "Failed to save message: " << responseMessage.toString() << std::endl;
                 return {0};
