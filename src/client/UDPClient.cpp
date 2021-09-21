@@ -112,7 +112,7 @@ void UDPClient::receiver()
 
         if (message.type == MSG_LOGOUT_TYPE && stop)
         {
-            std::cout << "Have a nice day. Bye! :D\n"
+            std::cout << "Have a nice day. Bye! :D\n";
             return;
         }
 

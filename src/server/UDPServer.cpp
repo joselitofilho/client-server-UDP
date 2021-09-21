@@ -78,7 +78,7 @@ void UDPServer::start()
                 sendMessages(controller.getMessages(), clientAddr);
                 break;
             case MSG_LOGOUT_TYPE:
-                sendMessage(responseMessage, clientAddr);
+                sendMessage(responseMessage.toString().c_str(), clientAddr);
                 break;
             }
         }
@@ -90,22 +90,18 @@ void UDPServer::broadcast(const SocketUsers &loggedUsers, const char *buffer) co
     SocketUsers::const_iterator it = loggedUsers.begin();
     while (it != loggedUsers.end())
     {
-        if (sendto(socketfd, buffer, strlen(buffer), 0, (struct sockaddr *)&it->second, sizeof(struct sockaddr)) < 0)
-        {
-            close(socketfd);
-            error("Writing to socket.");
-        }
+        sendMessage(buffer, it->second);
         ++it;
     }
 }
 
-void UDPServer::sendMessage(const Message &message, struct sockaddr_in clientAddr) const
+void UDPServer::sendMessage(const char *buffer, struct sockaddr_in clientAddr) const
 {
-    auto buffer = message.toString();
-    if (sendto(socketfd, buffer.c_str(), buffer.size(), 0, (struct sockaddr *)&clientAddr, sizeof(struct sockaddr)) < 0)
+    if (sendto(socketfd, buffer, strlen(buffer), 0, (struct sockaddr *)&clientAddr, sizeof(struct sockaddr)) < 0)
     {
+        std::cerr << "Writing to socket." << std::endl;
         close(socketfd);
-        error("Writing to socket.");
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -114,7 +110,7 @@ void UDPServer::sendMessages(const Messages &messages, struct sockaddr_in client
     Messages::const_iterator it = messages.begin();
     while (it != messages.end())
     {
-        sendMessage(it->second, clientAddr);
+        sendMessage(it->second.toString().c_str(), clientAddr);
         ++it;
     }
 }
