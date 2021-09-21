@@ -20,6 +20,8 @@ struct MessageRequest
 
     std::string toString() const
     {
+        if (type == MSG_INVALID_TYPE)
+            return "";
         return char(type) + username + ";" + text;
     }
 
