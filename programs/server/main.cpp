@@ -16,9 +16,10 @@ int main(int argc, char *argv[])
     }
     serverPort = atoi(argv[1]);
 
-    RedisRepository redisRepository("127.0.0.1", 6379);
+    RedisRepository redisRepository("127.0.0.1", 6379, 20);
     if (!redisRepository.init())
     {
+        std::cerr << "Redis is offline." << std::endl;
         exit(EXIT_FAILURE);
     }
 

@@ -70,16 +70,36 @@ void UDPServer::start()
         if (responseMessage.type != MSG_INVALID_TYPE)
         {
             broadcast(controller.getLoggedUsers(), responseMessage.toString().c_str());
+
+            if (responseMessage.type == MSG_LOGIN_TYPE)
+            {
+                sendMessages(controller.getMessages(), clientAddr);
+            }
         }
     }
 }
 
 void UDPServer::broadcast(const SocketUsers &loggedUsers, const char *buffer) const
 {
-    std::map<std::string, struct sockaddr_in>::const_iterator it = loggedUsers.begin();
+    SocketUsers::const_iterator it = loggedUsers.begin();
     while (it != loggedUsers.end())
     {
         if (sendto(socketfd, buffer, strlen(buffer), 0, (struct sockaddr *)&it->second, sizeof(struct sockaddr)) < 0)
+        {
+            close(socketfd);
+            error("Writing to socket.");
+        }
+        ++it;
+    }
+}
+
+void UDPServer::sendMessages(const Messages &messages, struct sockaddr_in clientAddr) const
+{
+    Messages::const_iterator it = messages.begin();
+    while (it != messages.end())
+    {
+        std::string buffer = it->second.toString();
+        if (sendto(socketfd, buffer.c_str(), buffer.size(), 0, (struct sockaddr *)&clientAddr, sizeof(struct sockaddr)) < 0)
         {
             close(socketfd);
             error("Writing to socket.");

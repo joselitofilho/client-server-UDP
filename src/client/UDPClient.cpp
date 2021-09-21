@@ -7,7 +7,7 @@
 #include <thread>
 
 UDPClient::UDPClient(const std::string &addr_, int serverPort_)
-    : addr(addr_), serverPort(serverPort_), socketfd(-1), stop(false)
+    : addr(addr_), serverPort(serverPort_), socketfd(-1), stop(false), messages()
 {
 }
 
@@ -96,6 +96,7 @@ void UDPClient::receiver()
 {
     char receiveBuffer[BUF_SIZE];
     int nbytes;
+    Messages::const_iterator it;
 
     while (!stop)
     {
@@ -109,8 +110,17 @@ void UDPClient::receiver()
         }
 
         receiveBuffer[nbytes] = '\0';
-        std::cout << receiveBuffer << std::endl;
+        Message message;
+        message.fromString(std::string(receiveBuffer));
+        messages.insert_or_assign(message.id, message);
 
-        // TODO: Implement
+        std::cout << std::string(100, '\n');
+
+        it = messages.begin();
+        while (it != messages.end())
+        {
+            std::cout << it->second.from << ": " << it->second.text << std::endl;
+            ++it;
+        }
     }
 }

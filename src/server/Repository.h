@@ -9,8 +9,8 @@ public:
     Repository() {}
     virtual ~Repository() {}
 
-    virtual std::map<long long, Message> all() = 0;
-    virtual bool create(Message &message) = 0;
+    virtual Messages all() = 0;
+    virtual long long create(Message &message) = 0;
     virtual void clear() = 0;
     virtual void remove(long long id) = 0;
 };

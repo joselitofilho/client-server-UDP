@@ -6,18 +6,26 @@
 class RedisRepository : public Repository
 {
 public:
-    RedisRepository(const std::string &addr, int port);
+    RedisRepository(const std::string &addr, int port, int capacity = 0);
     ~RedisRepository();
 
     bool init();
 
-    std::map<long long, Message> all();
-    bool create(Message &message);
+    /**
+     * Repository interface
+     */
+    Messages all();
+    long long create(Message &message);
     void clear();
     void remove(long long id);
 
 private:
     const std::string addr;
     int port;
+    int capacity;
     redisContext *redisCtx;
+
+    long long nextKey() const;
+    int rangeStop() const;
+    void trim() const;
 };

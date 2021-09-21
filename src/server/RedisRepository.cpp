@@ -2,8 +2,8 @@
 #include <iostream>
 #include <cstring>
 
-RedisRepository::RedisRepository(const std::string &addr_, int port_)
-    : addr(addr_), port(port_), redisCtx(nullptr)
+RedisRepository::RedisRepository(const std::string &addr_, int port_, int capacity_)
+    : addr(addr_), port(port_), capacity(capacity_), redisCtx(nullptr)
 {
 }
 
@@ -31,39 +31,53 @@ bool RedisRepository::init()
     }
 
     redisReply *reply = (redisReply *)redisCommand(redisCtx, "PING");
-    std::cout << "RedisRepository::PING:" << reply->str << std::endl;
     bool isOK = std::string(reply->str) == "PONG";
     freeReplyObject(reply);
 
     return isOK;
 }
 
-std::map<long long, Message> RedisRepository::all()
+Messages RedisRepository::all()
 {
-    // TODO: Implements
-    return std::map<long long, Message>();
-}
+    Messages messages;
+    Message message;
 
-bool RedisRepository::create(Message &message)
-{
-    bool isOk = false;
+    trim();
 
-    message.createdAt = std::time(0);
-
-    std::stringstream ssCommand;
-    ssCommand << std::to_string(message.type) << ";"
-              << message.createdAt << ";"
-              << message.from << ";"
-              << message.text;
-    redisReply *reply = (redisReply *)redisCommand(redisCtx, "LPUSH messages %s", ssCommand.str().c_str());
+    std::string command("LRANGE messages 0 " + std::to_string(rangeStop()));
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, command.c_str());
     if (reply)
     {
-        message.id = reply->integer;
-        isOk = message.id > 0ll;
+        if (reply->type == REDIS_REPLY_ARRAY)
+        {
+            for (size_t i = 0; i < reply->elements; ++i)
+            {
+                message = {0};
+                message.fromString(reply->element[i]->str);
+                messages.insert_or_assign(i, message);
+            }
+        }
     }
     freeReplyObject(reply);
 
-    return isOk;
+    return messages;
+}
+
+long long RedisRepository::create(Message &message)
+{
+    long long redisId = 0ll;
+
+    message.id = nextKey();
+    message.createdAt = std::time(0);
+
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, "LPUSH messages %s", message.toString().c_str());
+    if (reply)
+    {
+        redisId = reply->integer;
+    }
+    freeReplyObject(reply);
+
+    return redisId;
 }
 
 void RedisRepository::clear()
@@ -76,4 +90,31 @@ void RedisRepository::remove(long long id)
 {
     // TODO: Implements
     std::cout << "RedisRepository::remove::" << id << std::endl;
+}
+
+long long RedisRepository::nextKey() const
+{
+    long long nextKey = 0ll;
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, "INCR counter");
+    if (reply)
+    {
+        nextKey = reply->integer;
+    }
+    freeReplyObject(reply);
+    return nextKey;
+}
+
+void RedisRepository::trim() const
+{
+    std::string command("LTRIM messages 0 " + std::to_string(rangeStop()));
+    redisReply *reply = (redisReply *)redisCommand(redisCtx, command.c_str());
+    freeReplyObject(reply);
+}
+
+int RedisRepository::rangeStop() const
+{
+    int cap = 20;
+    if (capacity > 0)
+        cap = capacity;
+    return cap - 1;
 }

@@ -3,6 +3,8 @@
 #include <string>
 #include <ctime>
 #include <sstream>
+#include <iostream>
+#include <map>
 
 #define MSG_INVALID_TYPE 0
 #define MSG_LOGIN_TYPE 1
@@ -40,4 +42,32 @@ struct Message
            << text;
         return ss.str();
     }
+
+    void fromString(std::string buffer)
+    {
+        int start = 0, end = 0;
+
+        end = buffer.find(';', start);
+        id = std::stoll(buffer.substr(start, end-start));
+        start = end + 1;
+
+        end = buffer.find(';', start);
+        type = atoi(buffer.substr(start, end-start).c_str());
+        start = end + 1;
+
+        end = buffer.find(';', start);
+        std::stringstream ss;
+        ss << buffer.substr(start, end-start);
+        ss >> createdAt;
+        ss.str("");
+        start = end + 1;
+
+        end = buffer.find(';', start);
+        from = buffer.substr(start, end-start);
+        start = end + 1;
+        
+        text = buffer.substr(start);
+    }
 };
+
+typedef std::map<long long, Message> Messages;

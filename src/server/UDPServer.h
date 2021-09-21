@@ -20,4 +20,5 @@ private:
     Controller &controller;
 
     void broadcast(const SocketUsers &loggedUsers, const char *buffer) const;
+    void sendMessages(const Messages &messages, struct sockaddr_in clientAddr) const;
 };

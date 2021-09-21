@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include "core/Message.h"
 
 class UDPClient
 {
@@ -18,6 +19,7 @@ private:
     int serverPort;
     int socketfd;
     bool stop;
+    Messages messages;
 
     void sender();
     void receiver();
