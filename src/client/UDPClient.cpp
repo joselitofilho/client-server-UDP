@@ -71,14 +71,23 @@ void UDPClient::sender()
     MessageRequest message = {0};
     std::string sendBuffer;
 
+    std::map<long long, Message>::const_iterator it;
+
     while (!stop)
     {
         bzero(buffer, BUF_SIZE);
         fgets(buffer, BUF_SIZE, stdin);
         buffer[strcspn(buffer, "\r\n")] = 0; // Clear EOL. Works for LF, CR, CRLF, LFCR, ...
 
-        sendBuffer = parseCommand(username, buffer);
+        std::cout << std::string(100, '\n'); // Clear terminal.
+        it = messages.begin();
+        while (it != messages.end())
+        {
+            std::cout << it->second.id << " - " << it->second.from << ": " << it->second.text << std::endl;
+            ++it;
+        }
 
+        sendBuffer = parseCommand(username, buffer);
         if (send(socketfd, sendBuffer.c_str(), sendBuffer.size(), 0) < 0)
         {
             std::cerr << "Failed to send message." << std::endl;
@@ -114,12 +123,13 @@ void UDPClient::receiver()
         {
             std::cout << "Have a nice day. Bye! :D\n";
             return;
+        } else if (message.type == MSG_REMOVE_TEXT_TYPE) {
+            messages.erase(message.id);
+        } else {
+            messages.insert_or_assign(message.id, message);    
         }
 
-        messages.insert_or_assign(message.id, message);
-
         std::cout << std::string(100, '\n'); // Clear terminal.
-
         it = messages.begin();
         while (it != messages.end())
         {
@@ -134,7 +144,9 @@ std::string UDPClient::parseCommand(const std::string &username, std::string buf
     MessageRequest message = {0};
 
     if (buffer == ":exit")
+    {
         return char(MSG_LOGOUT_TYPE) + username;
+    }
     else if (buffer[0] == ':')
     {
         message = {

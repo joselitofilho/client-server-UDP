@@ -61,6 +61,7 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
     case MSG_REMOVE_TEXT_TYPE:
     {
         responseMessage = {
+            id: std::stoll(requestMessage.text),
             type : MSG_REMOVE_TEXT_TYPE,
             from : "server",
             text : requestMessage.username + " removed ID=" + requestMessage.text,
@@ -76,8 +77,7 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
         else if (requestMessage.type == MSG_REMOVE_TEXT_TYPE)
         {
             auto messages = getMessages();
-            auto messageID = std::stoll(requestMessage.text);
-            auto message = messages[messageID];
+            auto message = messages[responseMessage.id];
             if (!(message.from == requestMessage.username && repository->remove(message)))
                 return {0};
         }
