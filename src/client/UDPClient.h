@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include "core/Message.h"
+#include <string>
+#include "Chat.h"
 
 class UDPClient
 {
@@ -16,7 +16,7 @@ public:
 private:
     void sender();
     void receiver();
-    std::string parseCommand(const std::string &username, std::string buffer) const;
+    std::string buildMessage(const std::string &username, std::string buffer) const;
 
 private:
     std::string addr;
@@ -24,5 +24,5 @@ private:
     int serverPort;
     int socketfd;
     bool stop;
-    std::map<long long, Message> messages;
+    Chat chat;
 };

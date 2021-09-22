@@ -7,7 +7,7 @@
 #include <thread>
 
 UDPClient::UDPClient(const std::string &addr_, int serverPort_)
-    : addr(addr_), serverPort(serverPort_), socketfd(-1), stop(false), messages()
+    : addr(addr_), serverPort(serverPort_), socketfd(-1), stop(false), chat()
 {
 }
 
@@ -79,19 +79,11 @@ void UDPClient::sender()
         fgets(buffer, BUF_SIZE, stdin);
         buffer[strcspn(buffer, "\r\n")] = 0; // Clear EOL. Works for LF, CR, CRLF, LFCR, ...
 
-        std::cout << std::string(100, '\n'); // Clear terminal.
-        it = messages.begin();
-        while (it != messages.end())
-        {
-            std::cout << it->second.id << " - " << it->second.from << ": " << it->second.text << std::endl;
-            ++it;
-        }
+        chat.render();
 
-        sendBuffer = parseCommand(username, buffer);
+        sendBuffer = buildMessage(username, buffer);
         if (send(socketfd, sendBuffer.c_str(), sendBuffer.size(), 0) < 0)
-        {
             std::cerr << "Failed to send message." << std::endl;
-        }
 
         if (strcmp(buffer, ":exit") == 0)
             stop = true;
@@ -102,51 +94,40 @@ void UDPClient::receiver()
 {
     char receiveBuffer[BUF_SIZE];
     int nbytes;
-    std::map<long long, Message>::const_iterator it;
+    Message message;
 
     while (!stop)
     {
         bzero(receiveBuffer, BUF_SIZE);
         nbytes = 0;
+        message = {0};
 
         if ((nbytes = recv(socketfd, receiveBuffer, BUF_SIZE - 1, 0)) < 0)
         {
             std::cerr << "Failed receiving message." << std::endl;
             return;
         }
-
         receiveBuffer[nbytes] = '\0';
-        Message message;
-        message.fromString(std::string(receiveBuffer));
 
+        message.fromString(std::string(receiveBuffer));
         if (message.type == MSG_LOGOUT_TYPE && stop)
         {
-            std::cout << "Have a nice day. Bye! :D\n";
+            chat.bye();
             return;
-        } else if (message.type == MSG_REMOVE_TEXT_TYPE) {
-            messages.erase(message.id);
-        } else {
-            messages.insert_or_assign(message.id, message);    
         }
+        else
+            chat.receive(message);
 
-        std::cout << std::string(100, '\n'); // Clear terminal.
-        it = messages.begin();
-        while (it != messages.end())
-        {
-            std::cout << it->second.id << " - " << it->second.from << ": " << it->second.text << std::endl;
-            ++it;
-        }
+        chat.render();
     }
 }
 
-std::string UDPClient::parseCommand(const std::string &username, std::string buffer) const
+std::string UDPClient::buildMessage(const std::string &username, std::string buffer) const
 {
     MessageRequest message = {0};
 
     if (buffer == ":exit")
-    {
         return char(MSG_LOGOUT_TYPE) + username;
-    }
     else if (buffer[0] == ':')
     {
         message = {
