@@ -4,8 +4,25 @@ This project implements the communication between client and server via User Dat
 
 **Table of Contents**
 
+- [Prerequisites](#prerequisites)
+    - [Versions and Supportability](#versions-and-supportability)
 - [Build](#build)
 - [Run](#run)
+- [Tests](#tests)
+
+## Prerequisites
+
+- [docker](https://docs.docker.com/install/) version 20.10+.
+
+_NOTE_: To facilitate the execution of commands configure the docker to run without sudo.
+For more informations, visit the docker oficial documentation [Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/).
+
+### _Versions and Supportability_
+
+Projects contain a [`Makefile`](Makefile) that will install tools at versions defined at creation time. Those tools are:
+
+- [googletest and googlemock](https://github.com/google/googletest)
+- [hiredis](https://github.com/redis/hiredis)
 
 ## Build
 
@@ -13,38 +30,28 @@ This project implements the communication between client and server via User Dat
 $ make
 ```
 
-Server:
-```bash
-$ make server
-```
-
-Client:
-```bash
-$ make client
-```
-
 ## Run
 
-Server:
+Run the server on default port:
 ```bash
-$ make run-server SERVER_PORT=30000
+$ make run-server
 ```
-or
+or run on a specific port:
 ```bash
-$ ./bin/server 30000
-```
-
-Client:
-```bash
-$ make run-client SERVER_PORT=30000 CLIENT_NAME=Joselito
-```
-or
-```bash
-$ ./bin/client 30000 Joselito
+$ make run-server SERVER_PORT=40000
 ```
 
-## Test
+Run the client on the server's default port and enter the username `USER_NAME`:
 ```bash
-$ make test
+$ make run-client USER_NAME=Joselito
+```
+or run the client specifying the server port:
+```bash
+$ make run-client SERVER_PORT=40000 USER_NAME=Joselito
+```
+
+## Tests
+
+```bash
 $ make run-test
 ```
