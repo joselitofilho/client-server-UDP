@@ -100,6 +100,11 @@ struct Message
 
         text = buffer.substr(start);
     }
+
+    bool operator==(const Message &rh) const
+    {
+        return id == rh.id && type == rh.type && createdAt == rh.createdAt && from == rh.from && text == rh.text;
+    }
 };
 
 typedef std::map<long long, Message> Messages;

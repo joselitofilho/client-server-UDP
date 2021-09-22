@@ -88,3 +88,35 @@ TEST(ControllerTest, WhenAllClientsDisconnectTheDBIsFlushed)
     EXPECT_EQ(0, (int)loggedUsers.size());
     EXPECT_EQ(messageExpected.toString(), message.toString());
 }
+
+TEST(ControllerTest, WhenClientDeletesTheirOwnMessage_ReturnsAValidResponse)
+{
+    struct sockaddr_in clientAddr;
+    std::string buffer("Joselito;25");
+    buffer.insert(0, 1, char(MSG_REMOVE_TEXT_TYPE));
+    std::time_t now = std::time(0);
+    Message messageExpected = {
+        25ll,
+        MSG_REMOVE_TEXT_TYPE,
+        now,
+        "server",
+        "Joselito removed ID=25",
+    };
+    Messages messages;
+    const Message message25 = {25ll, MSG_SEND_TEXT_TYPE, now, "Joselito", "Hi Folks."};
+    messages.insert_or_assign(message25.id, message25);
+    NiceMock<MockRepository> mockRepository;
+    EXPECT_CALL(mockRepository, all())
+        .WillOnce(Return(messages));
+    EXPECT_CALL(mockRepository, remove(message25))
+        .WillOnce(Return(true));
+
+    Controller controller(&mockRepository);
+    auto message = controller.onRequestHandle(buffer, clientAddr);
+    message.createdAt = now;
+
+    auto loggedUsers = controller.getLoggedUsers();
+    EXPECT_EQ(1, (int)loggedUsers.size());
+    EXPECT_TRUE(loggedUsers.find("Joselito") != loggedUsers.end());
+    EXPECT_EQ(messageExpected.toString(), message.toString());
+}
