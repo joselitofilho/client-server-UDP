@@ -101,6 +101,43 @@ struct Message
         text = buffer.substr(start);
     }
 
+    void fromMessageRequest(const MessageRequest &requestMessage)
+    {
+        switch (requestMessage.type)
+        {
+        case MSG_LOGIN_TYPE:
+        {
+            type = MSG_LOGIN_TYPE;
+            from = "server";
+            text = requestMessage.username + " is logged in.";
+        }
+        break;
+        case MSG_LOGOUT_TYPE:
+        {
+            type = MSG_LOGOUT_TYPE;
+            from = "server";
+            text = requestMessage.username + " is logged out.";
+        };
+
+        break;
+        case MSG_SEND_TEXT_TYPE:
+        {
+            type = requestMessage.type;
+            from = requestMessage.username;
+            text = requestMessage.text;
+        }
+        break;
+        case MSG_REMOVE_TEXT_TYPE:
+        {
+            id = std::stoll(requestMessage.text);
+            type = MSG_REMOVE_TEXT_TYPE;
+            from = "server";
+            text = requestMessage.username + " removed ID=" + requestMessage.text;
+        }
+        break;
+        }
+    }
+
     bool operator==(const Message &rh) const
     {
         return id == rh.id && type == rh.type && createdAt == rh.createdAt && from == rh.from && text == rh.text;

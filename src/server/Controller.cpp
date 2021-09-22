@@ -28,47 +28,10 @@ Message Controller::onRequestHandle(const std::string &buffer, struct sockaddr_i
     loggedUsers.insert_or_assign(requestMessage.username, clientAddr);
 
     Message responseMessage = {0};
-    switch (requestMessage.type)
-    {
-    case MSG_LOGIN_TYPE:
-    {
-        responseMessage = {
-            type : MSG_LOGIN_TYPE,
-            from : "server",
-            text : requestMessage.username + " is logged in.",
-        };
-    }
-    break;
-    case MSG_LOGOUT_TYPE:
-    {
+    responseMessage.fromMessageRequest(requestMessage);
+
+    if (responseMessage.type == MSG_LOGOUT_TYPE)
         loggedUsers.erase(requestMessage.username);
-        responseMessage = {
-            type : MSG_LOGOUT_TYPE,
-            from : "server",
-            text : requestMessage.username + " is logged out.",
-        };
-    }
-    break;
-    case MSG_SEND_TEXT_TYPE:
-    {
-        responseMessage = {
-            type : requestMessage.type,
-            from : requestMessage.username,
-            text : requestMessage.text,
-        };
-    }
-    break;
-    case MSG_REMOVE_TEXT_TYPE:
-    {
-        responseMessage = {
-            id: std::stoll(requestMessage.text),
-            type : MSG_REMOVE_TEXT_TYPE,
-            from : "server",
-            text : requestMessage.username + " removed ID=" + requestMessage.text,
-        };
-    }
-    break;
-    }
 
     if (repository != nullptr)
     {
