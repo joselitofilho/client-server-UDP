@@ -1,7 +1,7 @@
 #include "Chat.h"
 
 Chat::Chat()
-    : messages()
+    : serverIsOn(false), messages()
 {
 }
 
@@ -36,8 +36,10 @@ void Chat::render() const
 {
     clear();
 
-    std::cout << "Welcome to the Jungle! Your favorite UDP chat.\n\n";
-    std::cout << "Chat:\n";
+    std::cout << "Welcome to the Jungle! Your favorite UDP chat.";
+    if (!serverIsOn)
+        std::cout << "\n[Server is OFF]";
+    std::cout << "\n\nChat:\n";
 
     Messages::const_iterator it;
     it = messages.begin();

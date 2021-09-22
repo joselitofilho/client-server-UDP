@@ -46,18 +46,15 @@ void UDPClient::login(const std::string &username_)
 {
     username = username_;
     std::string cmdLoginBuffer(char(MSG_LOGIN_TYPE) + username);
-    if (send(socketfd, cmdLoginBuffer.c_str(), cmdLoginBuffer.size(), 0) < 0)
-    {
-        std::cerr << "Failed to send message." << std::endl;
-        close(socketfd);
-        stop = true;
-    }
+    send(socketfd, cmdLoginBuffer.c_str(), cmdLoginBuffer.size(), 0);
 }
 
 void UDPClient::start()
 {
-    std::thread senderThread(&UDPClient::sender, this);
+    chat.render();
+
     std::thread receiverThread(&UDPClient::receiver, this);
+    std::thread senderThread(&UDPClient::sender, this);
 
     senderThread.join();
     receiverThread.join();
@@ -71,8 +68,6 @@ void UDPClient::sender()
     MessageRequest message = {0};
     std::string sendBuffer;
 
-    std::map<long long, Message>::const_iterator it;
-
     while (!stop)
     {
         bzero(buffer, BUF_SIZE);
@@ -82,8 +77,7 @@ void UDPClient::sender()
         chat.render();
 
         sendBuffer = buildMessage(username, buffer);
-        if (send(socketfd, sendBuffer.c_str(), sendBuffer.size(), 0) < 0)
-            std::cerr << "Failed to send message." << std::endl;
+        send(socketfd, sendBuffer.c_str(), sendBuffer.size(), 0);
 
         if (strcmp(buffer, ":exit") == 0)
             stop = true;
@@ -104,9 +98,12 @@ void UDPClient::receiver()
 
         if ((nbytes = recv(socketfd, receiveBuffer, BUF_SIZE - 1, 0)) < 0)
         {
-            std::cerr << "Failed receiving message." << std::endl;
-            return;
+            chat.setServerIsOn(false);
+            chat.render();
+            // TODO - LOG: std::cerr << "Server is unavailable." << std::endl;
+            continue;
         }
+        chat.setServerIsOn(true);
         receiveBuffer[nbytes] = '\0';
 
         message.fromString(std::string(receiveBuffer));
