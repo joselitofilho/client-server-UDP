@@ -1,6 +1,7 @@
 CXX = g++
-CXXFLAGS = -Wall -Werror -Wextra -std=c++17 -g -fsanitize=address #-pedantic hiredis
+CXXFLAGS = -Wall -Werror -Wextra -std=c++17 -g -fsanitize=address
 LDFLAGS =  -fsanitize=address
+TESTFLAGS = -Wall -Werror -Wextra -std=c++17 -g -w -Wno-error=deprecated-copy
 LIBS=-pthread
 BIN_DIR = ./bin
 SRC_DIR = ./src
@@ -15,7 +16,9 @@ HIREDISFLAGS = -I$(HIREDIS_HOME)/include -L$(HIREDIS_LIBRARY_PATH) -lhiredis
 
 GTEST_HOME = $(LIBS_DIR)/gtest
 GTEST_LIBRARY_PATH = $(GTEST_HOME)/lib
-GTESTFLAGS = -I$(GTEST_HOME)/include -L$(GTEST_LIBRARY_PATH) -lgtest -lgtest_main -pthread
+GMOCK_HOME = $(LIBS_DIR)/gmock
+GMOCK_LIBRARY_PATH = $(GMOCK_HOME)/lib
+GTESTFLAGS = -I$(GTEST_HOME)/include -I$(GMOCK_HOME)/include -L$(GTEST_LIBRARY_PATH) -L$(GMOCK_LIBRARY_PATH) -lgtest -lgtest_main -lgmock -pthread
 
 CLIENT_EXEC = $(BIN_DIR)/client
 SERVER_EXEC = $(BIN_DIR)/server
@@ -52,7 +55,7 @@ server: $(SRC_DIR)/server/*.cpp $(PROGRAMS_DIR)/server/main.cpp redis
 	$(DOCKER_EXEC) "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(HIREDISFLAGS) $(SRC_DIR)/server/*.cpp $(PROGRAMS_DIR)/server/main.cpp -o $(SERVER_EXEC)"
 
 test: $(SRC_DIR)/server/*.cpp $(TEST_DIR)/main.cpp gtest
-	$(DOCKER_EXEC) "$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE_PATHS) $(HIREDISFLAGS) $(GTESTFLAGS) $(SRC_DIR)/server/*.cpp $(TEST_DIR)/*.cpp -o $(TEST_EXEC)"
+	$(DOCKER_EXEC) "$(CXX) $(TESTFLAGS) $(INCLUDE_PATHS) $(HIREDISFLAGS) $(GTESTFLAGS) $(SRC_DIR)/server/*.cpp $(TEST_DIR)/*.cpp -o $(TEST_EXEC)"
 
 run-client: $(CLIENT_EXEC)
 	$(DOCKER_EXEC) "$(CLIENT_EXEC) $(SERVER_PORT) $(CLIENT_NAME)"
@@ -61,10 +64,11 @@ run-server: $(SERVER_EXEC)
 	$(DOCKER_EXEC) "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH) $(SERVER_EXEC) $(SERVER_PORT)"
 
 run-test: $(TEST_EXEC)
-	$(DOCKER_EXEC) "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH):$(GTEST_LIBRARY_PATH) $(TEST_EXEC)"
+	$(DOCKER_EXEC) "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH):$(GTEST_LIBRARY_PATH):$(GMOCK_LIBRARY_PATH) $(TEST_EXEC)"
 
 clean:
-	rm -rf $(CLIENT_EXEC) $(SERVER_EXEC) $(TEST_EXEC) *.o
+	rm -rf $(CLIENT_EXEC) $(SERVER_EXEC) $(TEST_EXEC) *.o \
+		release-1.8.0.tar.gz googletest-release-1.8.0/
 
 gtest: cpp-dev
 	if [ ! -d "$(GTEST_HOME)" ]; then \
@@ -77,8 +81,12 @@ gtest: cpp-dev
 			make; \
 			mkdir -p ../libs/gtest/include; \
 			cp -a googletest/include/gtest/ ../libs/gtest/include; \
+			mkdir -p ../libs/gmock/include; \
+			cp -a googlemock/include/gmock/ ../libs/gmock/include; \
 			mkdir -p ../libs/gtest/lib; \
 			cp -a googlemock/gtest/libgtest_main.so googlemock/gtest/libgtest.so ../libs/gtest/lib; \
+			mkdir -p ../libs/gmock/lib; \
+			cp -a googlemock/libgmock_main.so googlemock/libgmock.so ../libs/gmock/lib; \
 			cd ..; \
 			rm -r googletest-release-1.8.0/;"; \
     fi

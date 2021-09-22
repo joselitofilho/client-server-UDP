@@ -34,4 +34,5 @@ bin/*
 
 # Project
 libs/gtest/*
+libs/gmock/*
 libs/hiredis/*
