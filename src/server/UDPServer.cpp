@@ -1,6 +1,5 @@
 #include "server/UDPServer.h"
 #include "core/constants.h"
-#include "core/errors.h"
 #include <arpa/inet.h>
 #include <map>
 #include <string.h>

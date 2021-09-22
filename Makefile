@@ -39,8 +39,11 @@ all: build
 
 build: builder-container client server test redis
 
+BUILDER_IMAGE_CREATED = $(shell docker images -q $(IMAGE_NAME) | wc -l)
 builder:
-	-docker build -t $(IMAGE_NAME) .
+	if [ $(BUILDER_IMAGE_CREATED) -eq 0 ]; then \
+		docker build -t $(IMAGE_NAME) . ; \
+	fi
 
 builder-container: builder
 	-docker run -v $(PWD):/src -w /src --label com.docker.compose.project=development --network=host --rm -itd --name $(CONTAINER_NAME) $(IMAGE_NAME)
