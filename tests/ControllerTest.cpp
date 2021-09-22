@@ -2,19 +2,11 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "server/Controller.h"
+#include "MockRepository.h"
 
 using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::Return;
-
-class MockRepository : public Repository
-{
-public:
-    MOCK_METHOD0(all, Messages());
-    MOCK_METHOD1(create, long long(Message &message));
-    MOCK_METHOD0(clear, void());
-    MOCK_METHOD1(remove, bool(const Message &message));
-};
 
 TEST(ControllerTest, OnRequestHandleForLoginBuffer)
 {
@@ -49,7 +41,7 @@ TEST(ControllerTest, OnRequestHandleForLoginBuffer_WhenRepositoryCreateFailed_Re
     std::string buffer("Joselito");
     buffer.insert(0, 1, char(MSG_LOGIN_TYPE));
     std::time_t now = std::time(0);
-    Message messageExpected = {0};
+    Message invalidMessageExpected = {0};
     NiceMock<MockRepository> mockRepository;
     EXPECT_CALL(mockRepository, create(_))
         .WillOnce(Return(0ll));
@@ -61,7 +53,7 @@ TEST(ControllerTest, OnRequestHandleForLoginBuffer_WhenRepositoryCreateFailed_Re
     auto loggedUsers = controller.getLoggedUsers();
     EXPECT_EQ(1, (int)loggedUsers.size());
     EXPECT_TRUE(loggedUsers.find("Joselito") != loggedUsers.end());
-    EXPECT_EQ(messageExpected.toString(), message.toString());
+    EXPECT_EQ(invalidMessageExpected.toString(), message.toString());
 }
 
 TEST(ControllerTest, WhenAllClientsDisconnectTheDBIsFlushed)
@@ -127,7 +119,7 @@ TEST(ControllerTest, WhenClientTriesToDeleteAMessageThatIsNotTheir_ReturnsAInval
     std::string buffer("Joselito;25");
     buffer.insert(0, 1, char(MSG_REMOVE_TEXT_TYPE));
     std::time_t now = std::time(0);
-    Message messageExpected = {0};
+    Message invalidMessageExpected = {0};
     Messages messages;
     const Message message25 = {25ll, MSG_SEND_TEXT_TYPE, now, "Miguel", "Hi Folks."};
     messages.insert_or_assign(message25.id, message25);
@@ -143,5 +135,5 @@ TEST(ControllerTest, WhenClientTriesToDeleteAMessageThatIsNotTheir_ReturnsAInval
     auto loggedUsers = controller.getLoggedUsers();
     EXPECT_EQ(1, (int)loggedUsers.size());
     EXPECT_TRUE(loggedUsers.find("Joselito") != loggedUsers.end());
-    EXPECT_EQ(messageExpected.toString(), message.toString());
+    EXPECT_EQ(invalidMessageExpected.toString(), message.toString());
 }
