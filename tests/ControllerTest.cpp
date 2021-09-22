@@ -63,3 +63,28 @@ TEST(ControllerTest, OnRequestHandleForLoginBuffer_WhenRepositoryCreateFailed_Re
     EXPECT_TRUE(loggedUsers.find("Joselito") != loggedUsers.end());
     EXPECT_EQ(messageExpected.toString(), message.toString());
 }
+
+TEST(ControllerTest, WhenAllClientsDisconnectTheDBIsFlushed)
+{
+    struct sockaddr_in clientAddr;
+    std::string buffer("Joselito");
+    buffer.insert(0, 1, char(MSG_LOGOUT_TYPE));
+    std::time_t now = std::time(0);
+    Message messageExpected = {
+        0ll,
+        MSG_LOGOUT_TYPE,
+        now,
+        "server",
+        "Joselito is logged out.",
+    };
+    NiceMock<MockRepository> mockRepository;
+    EXPECT_CALL(mockRepository, clear()).Times(1);
+
+    Controller controller(&mockRepository);
+    auto message = controller.onRequestHandle(buffer, clientAddr);
+    message.createdAt = now;
+
+    auto loggedUsers = controller.getLoggedUsers();
+    EXPECT_EQ(0, (int)loggedUsers.size());
+    EXPECT_EQ(messageExpected.toString(), message.toString());
+}
