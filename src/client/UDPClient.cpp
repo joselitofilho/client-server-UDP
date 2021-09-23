@@ -8,52 +8,52 @@
 
 using namespace jungle;
 
-UDPClient::UDPClient(const std::string &addr_, int serverPort_)
-    : addr(addr_), serverPort(serverPort_), socketfd(-1), stop(false), chat()
+UDPClient::UDPClient(const std::string &t_addr, int t_serverPort)
+    : m_addr{t_addr}, m_serverPort{t_serverPort}, m_socketfd{-1}, m_stop{false}, m_chat{}
 {
 }
 
 UDPClient::~UDPClient()
 {
-    close(socketfd);
+    close(m_socketfd);
 }
 
 bool UDPClient::init()
 {
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(serverPort);
-    serverAddr.sin_addr.s_addr = inet_addr(addr.c_str());
+    serverAddr.sin_port = htons(m_serverPort);
+    serverAddr.sin_addr.s_addr = inet_addr(m_addr.c_str());
     memset(&(serverAddr.sin_zero), '\0', 8);
 
-    socketfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socketfd < 0)
+    m_socketfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (m_socketfd < 0)
     {
         std::cerr << "Failed to get socket file descriptor." << std::endl;
-        close(socketfd);
+        close(m_socketfd);
         return false;
     }
 
-    if (connect(socketfd, (struct sockaddr *)&serverAddr, sizeof(struct sockaddr)) < 0)
+    if (connect(m_socketfd, (struct sockaddr *)&serverAddr, sizeof(struct sockaddr)) < 0)
     {
         std::cerr << "Failed to connect to remote server." << std::endl;
-        close(socketfd);
+        close(m_socketfd);
         return false;
     }
 
     return true;
 }
 
-void UDPClient::login(const std::string &username_)
+void UDPClient::login(const std::string &t_username)
 {
-    username = username_;
-    std::string cmdLoginBuffer(char(MSG_LOGIN_TYPE) + username);
-    send(socketfd, cmdLoginBuffer.c_str(), cmdLoginBuffer.size(), 0);
+    m_username = t_username;
+    std::string cmdLoginBuffer(char(MSG_LOGIN_TYPE) + m_username);
+    send(m_socketfd, cmdLoginBuffer.c_str(), cmdLoginBuffer.size(), 0);
 }
 
 void UDPClient::start()
 {
-    chat.render();
+    m_chat.render();
 
     std::thread receiverThread(&UDPClient::receiver, this);
     std::thread senderThread(&UDPClient::sender, this);
@@ -61,7 +61,7 @@ void UDPClient::start()
     senderThread.join();
     receiverThread.join();
 
-    close(socketfd);
+    close(m_socketfd);
 }
 
 void UDPClient::sender()
@@ -70,19 +70,21 @@ void UDPClient::sender()
     MessageRequest message = {0};
     std::string sendBuffer;
 
-    while (!stop)
+    while (!m_stop)
     {
         bzero(buffer, BUF_SIZE);
         fgets(buffer, BUF_SIZE, stdin);
         buffer[strcspn(buffer, "\r\n")] = 0; // Clear EOL. Works for LF, CR, CRLF, LFCR, ...
 
-        chat.render();
+        m_chat.render();
 
-        sendBuffer = buildMessage(username, buffer);
-        send(socketfd, sendBuffer.c_str(), sendBuffer.size(), 0);
+        sendBuffer = buildMessage(m_username, buffer);
+        send(m_socketfd, sendBuffer.c_str(), sendBuffer.size(), 0);
 
         if (strcmp(buffer, ":exit") == 0)
-            stop = true;
+        {
+            m_stop = true;
+        }
     }
 }
 
@@ -92,46 +94,49 @@ void UDPClient::receiver()
     int nbytes;
     Message message;
 
-    while (!stop)
+    while (!m_stop)
     {
         bzero(receiveBuffer, BUF_SIZE);
         nbytes = 0;
         message = {0};
 
-        if ((nbytes = recv(socketfd, receiveBuffer, BUF_SIZE - 1, 0)) < 0)
+        if ((nbytes = recv(m_socketfd, receiveBuffer, BUF_SIZE - 1, 0)) < 0)
         {
-            chat.setServerIsOn(false);
-            chat.render();
-            // TODO - LOG: std::cerr << "Server is unavailable." << std::endl;
+            m_chat.setServerIsOn(false);
+            m_chat.render();
             continue;
         }
-        chat.setServerIsOn(true);
+        m_chat.setServerIsOn(true);
         receiveBuffer[nbytes] = '\0';
 
         message.fromString(std::string(receiveBuffer));
-        if (message.type == MSG_LOGOUT_TYPE && stop)
+        if (message.type == MSG_LOGOUT_TYPE && m_stop)
         {
-            chat.bye();
+            m_chat.bye();
             return;
         }
         else
-            chat.receive(message);
+        {
+            m_chat.receive(message);
+        }
 
-        chat.render();
+        m_chat.render();
     }
 }
 
-std::string UDPClient::buildMessage(const std::string &username, std::string buffer) const
+std::string UDPClient::buildMessage(const std::string &t_username, std::string buffer) const
 {
     MessageRequest message = {0};
 
     if (buffer == ":exit")
-        return char(MSG_LOGOUT_TYPE) + username;
+    {
+        return char(MSG_LOGOUT_TYPE) + t_username;
+    }
     else if (buffer[0] == ':')
     {
         message = {
             MSG_REMOVE_TEXT_TYPE,
-            username,
+            t_username,
             buffer.substr(1),
         };
     }
@@ -139,7 +144,7 @@ std::string UDPClient::buildMessage(const std::string &username, std::string buf
     {
         message = {
             MSG_SEND_TEXT_TYPE,
-            username,
+            t_username,
             buffer,
         };
     }

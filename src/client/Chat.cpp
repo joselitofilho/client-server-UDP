@@ -3,7 +3,7 @@
 using namespace jungle;
 
 Chat::Chat()
-    : serverIsOn(false), messages()
+    : m_serverIsOn{false}, m_messages{}
 {
 }
 
@@ -29,9 +29,13 @@ void Chat::clear() const
 void Chat::receive(const Message &message)
 {
     if (message.type == MSG_REMOVE_TEXT_TYPE)
-        messages.erase(message.id);
+    {
+        m_messages.erase(message.id);
+    }
     else
-        messages.insert_or_assign(message.id, message);
+    {
+        m_messages.insert_or_assign(message.id, message);
+    }
 }
 
 void Chat::render() const
@@ -39,13 +43,14 @@ void Chat::render() const
     clear();
 
     std::cout << "Welcome to the Jungle! Your favorite UDP chat.";
-    if (!serverIsOn)
+    if (!m_serverIsOn)
+    {
         std::cout << "\n[Server is OFF]";
+    }
     std::cout << "\n\nChat:\n";
 
-    Messages::const_iterator it;
-    it = messages.begin();
-    while (it != messages.end())
+    auto it = m_messages.begin();
+    while (it != m_messages.end())
     {
         std::cout << it->second.id << " - " << it->second.from << ": " << it->second.text << std::endl;
         ++it;

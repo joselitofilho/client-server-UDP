@@ -1,4 +1,7 @@
 #pragma once
 
+#define DEFAULT_SERVER_ADDR "127.0.0.1"
+#define DEFAULT_SERVER_PORT 30000
+
 #define BUF_SIZE 1024
 #define USERNAME_LEN 32
