@@ -5,6 +5,7 @@ RUN apt-get update \
     cmake \
     curl \
     git \
+    lcov \
     make \
     vim \
     wget \

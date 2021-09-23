@@ -36,3 +36,4 @@ bin/*
 libs/gtest/*
 libs/gmock/*
 libs/hiredis/*
+coverage/

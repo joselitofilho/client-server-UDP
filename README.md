@@ -70,3 +70,10 @@ $ make run-client SERVER_PORT=40000 USER_NAME=Joselito
 ```bash
 $ make run-test
 ```
+
+## Coverage
+
+```bash
+$ make coverage
+```
+Open the coverage/index.html file in your browser.

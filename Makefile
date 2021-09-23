@@ -7,6 +7,7 @@ BIN_DIR  =     ./bin
 SRC_DIR  =     ./src
 LIBS_DIR =     ./libs
 TEST_DIR = 	   ./tests
+COVERAGE_DIR = ./coverage
 PROGRAMS_DIR = ./programs
 
 INCLUDE_PATHS = -I$(SRC_DIR)
@@ -33,17 +34,14 @@ DOCKER_EXEC = docker exec -it $(CONTAINER_NAME) bash -c
 SERVER_PORT = 30000
 PWD = $(shell pwd)
 
-.PHONY: all build builder builder-container client server test run-client run-server run-test gtest hiredis redis clean clean-all
+.PHONY: all build builder builder-container client server test run-client run-server run-test coverage gtest hiredis redis clean clean-all
 
 all: build
 
 build: builder-container client server test redis
 
-BUILDER_IMAGE_CREATED = $(shell docker images -q $(IMAGE_NAME) | wc -l)
 builder:
-	if [ $(BUILDER_IMAGE_CREATED) -eq 0 ]; then \
-		docker build -t $(IMAGE_NAME) . ; \
-	fi
+	-docker build -t $(IMAGE_NAME) .
 
 builder-container: builder
 	-docker run -v $(PWD):/src -w /src --label com.docker.compose.project=development --network=host --rm -itd --name $(CONTAINER_NAME) $(IMAGE_NAME)
@@ -68,6 +66,14 @@ run-server: $(SERVER_EXEC)
 $(TEST_EXEC): test
 run-test: $(TEST_EXEC)
 	$(DOCKER_EXEC) "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH):$(GTEST_LIBRARY_PATH):$(GMOCK_LIBRARY_PATH) $(TEST_EXEC)"
+
+coverage: builder-container
+	rm -rf $(BIN_DIR)/*.gcda $(BIN_DIR)/*.gcno
+	$(DOCKER_EXEC) "$(CXX) $(CXXFLAGS_TEST) $(INCLUDE_PATHS) $(HIREDISFLAGS) $(GTESTFLAGS) -fprofile-arcs -ftest-coverage $(SRC_DIR)/server/*.cpp $(TEST_DIR)/*.cpp -o $(TEST_EXEC)"
+	-$(DOCKER_EXEC) "LD_LIBRARY_PATH=$(HIREDIS_LIBRARY_PATH):$(GTEST_LIBRARY_PATH):$(GMOCK_LIBRARY_PATH) $(TEST_EXEC)"
+	mkdir -p $(COVERAGE_DIR)
+	$(DOCKER_EXEC) "lcov --directory $(BIN_DIR) --capture --exclude \"/src/libs/*\" --exclude \"/src/tests/*\" --output-file $(COVERAGE_DIR)/coverage.info -rc lcov_branch_coverage=1"
+	$(DOCKER_EXEC) "genhtml $(COVERAGE_DIR)/coverage.info --output-directory $(COVERAGE_DIR)"
 
 gtest: builder-container
 	if [ ! -d "$(GTEST_HOME)" ]; then \
@@ -106,7 +112,7 @@ redis:
 	-docker run --rm --label com.docker.compose.project=development -d -p 6379:6379 -e ALLOW_EMPTY_PASSWORD=yes --name redis bitnami/redis:latest
 
 clean:
-	rm -rf $(CLIENT_EXEC) $(SERVER_EXEC) $(TEST_EXEC)
+	rm -rf $(CLIENT_EXEC) $(SERVER_EXEC) $(TEST_EXEC) $(BIN_DIR)/*.gcda $(BIN_DIR)/*.gcno $(COVERAGE_DIR)
 
 clean-all: clean
 	rm -rf release-1.8.0.tar.gz googletest-release-1.8.0/ hiredis/ \
