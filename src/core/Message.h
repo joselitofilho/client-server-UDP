@@ -22,14 +22,16 @@ namespace jungle
 
     struct MessageRequest
     {
-        int type = MSG_INVALID_TYPE;
-        std::string username = "";
-        std::string text = "";
+        int type{MSG_INVALID_TYPE};
+        std::string username{""};
+        std::string text{""};
 
         std::string toString() const
         {
             if (type == MSG_INVALID_TYPE)
+            {
                 return "";
+            }
             return char(type) + username + ";" + text;
         }
 
@@ -57,8 +59,10 @@ namespace jungle
                 }
                 break;
                 default:
+                {
                     type = MSG_INVALID_TYPE;
-                    break;
+                }
+                break;
                 }
             }
         }
@@ -66,11 +70,11 @@ namespace jungle
 
     struct Message
     {
-        long long id = 0ll;
-        int type = MSG_INVALID_TYPE;
-        std::time_t createdAt = std::time(0);
-        std::string from = "";
-        std::string text = "";
+        long long id{0};
+        int type{MSG_INVALID_TYPE};
+        std::time_t createdAt{0};
+        std::string from{""};
+        std::string text{""};
 
         std::string toString() const
         {

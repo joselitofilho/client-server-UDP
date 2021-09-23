@@ -13,18 +13,18 @@ namespace jungle
     class Controller
     {
     public:
-        Controller(Repository *repository);
-        Controller(const Controller &other) = delete;
+        Controller(Repository *t_repository = nullptr);
+        Controller(const Controller &) = delete;
         Controller &operator=(const Controller &) = delete;
         ~Controller();
 
-        const SocketUsers &getLoggedUsers() const { return loggedUsers; };
-        Messages getMessages() const;
+        const SocketUsers &getLoggedUsers() const { return m_loggedUsers; };
 
-        Message onRequestHandle(const std::string &buffer, struct sockaddr_in clientAddr);
+        Messages allMessages() const;
+        Message onRequestHandle(const std::string &t_buffer, struct sockaddr_in t_clientAddr);
 
     private:
-        Repository *repository;
-        SocketUsers loggedUsers;
+        Repository *m_repository{nullptr};
+        SocketUsers m_loggedUsers{};
     };
 }

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <map>
+#include "core/constants.h"
 #include "Controller.h"
 
 namespace jungle
@@ -9,23 +10,23 @@ namespace jungle
     class UDPServer
     {
     public:
-        UDPServer(const std::string &addr, int port, Controller &controller);
-        UDPServer(const UDPServer &other) = delete;
+        UDPServer(const std::string &t_addr, int t_port, Controller &t_controller);
+        UDPServer(const UDPServer &) = delete;
         UDPServer &operator=(const UDPServer &) = delete;
         ~UDPServer();
 
         bool init();
-        void start();
+        void start() const;
 
     private:
-        void broadcast(const SocketUsers &loggedUsers, const char *buffer) const;
-        void sendMessage(const char *buffer, struct sockaddr_in clientAddr) const;
-        void sendMessages(const Messages &messages, struct sockaddr_in clientAddr) const;
+        void broadcast(const SocketUsers &t_users, const char *t_buffer) const;
+        void sendMessage(const char *t_buffer, struct sockaddr_in t_clientAddr) const;
+        void sendMessages(const Messages &t_messages, struct sockaddr_in t_clientAddr) const;
 
     private:
-        std::string addr;
-        int port;
-        int socketfd;
-        Controller &controller;
+        const std::string m_addr{DEFAULT_SERVER_ADDR};
+        const int m_port{DEFAULT_SERVER_PORT};
+        int m_socketfd{-1};
+        Controller &m_controller;
     };
 }

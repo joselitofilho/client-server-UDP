@@ -42,15 +42,13 @@ TEST(ControllerTest, OnRequestHandleForLoginBuffer_WhenRepositoryCreateFailed_Re
     struct sockaddr_in clientAddr;
     std::string buffer("Joselito");
     buffer.insert(0, 1, char(MSG_LOGIN_TYPE));
-    std::time_t now = std::time(0);
-    Message invalidMessageExpected = {0};
+    Message invalidMessageExpected{0};
     NiceMock<MockRepository> mockRepository;
     EXPECT_CALL(mockRepository, create(_))
         .WillOnce(Return(0ll));
 
     Controller controller(&mockRepository);
     auto message = controller.onRequestHandle(buffer, clientAddr);
-    message.createdAt = now;
 
     auto loggedUsers = controller.getLoggedUsers();
     EXPECT_EQ(1, (int)loggedUsers.size());
@@ -97,7 +95,7 @@ TEST(ControllerTest, WhenClientDeletesTheirOwnMessage_ReturnsAValidResponse)
         "Joselito removed ID=25",
     };
     Messages messages;
-    const Message message25 = {25ll, MSG_SEND_TEXT_TYPE, now, "Joselito", "Hi Folks."};
+    const Message message25{25ll, MSG_SEND_TEXT_TYPE, now, "Joselito", "Hi Folks."};
     messages.insert_or_assign(message25.id, message25);
     NiceMock<MockRepository> mockRepository;
     EXPECT_CALL(mockRepository, all())
@@ -120,10 +118,9 @@ TEST(ControllerTest, WhenClientTriesToDeleteAMessageThatIsNotTheir_ReturnsAInval
     struct sockaddr_in clientAddr;
     std::string buffer("Joselito;25");
     buffer.insert(0, 1, char(MSG_REMOVE_TEXT_TYPE));
-    std::time_t now = std::time(0);
-    Message invalidMessageExpected = {0};
+    Message invalidMessageExpected{0};
     Messages messages;
-    const Message message25 = {25ll, MSG_SEND_TEXT_TYPE, now, "Miguel", "Hi Folks."};
+    const Message message25{25ll, MSG_SEND_TEXT_TYPE, std::time(0), "Miguel", "Hi Folks."};
     messages.insert_or_assign(message25.id, message25);
     NiceMock<MockRepository> mockRepository;
     EXPECT_CALL(mockRepository, all())
@@ -132,7 +129,6 @@ TEST(ControllerTest, WhenClientTriesToDeleteAMessageThatIsNotTheir_ReturnsAInval
 
     Controller controller(&mockRepository);
     auto message = controller.onRequestHandle(buffer, clientAddr);
-    message.createdAt = now;
 
     auto loggedUsers = controller.getLoggedUsers();
     EXPECT_EQ(1, (int)loggedUsers.size());

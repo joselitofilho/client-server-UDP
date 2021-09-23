@@ -8,7 +8,7 @@ TEST(MessageRequestTest, ParseLoginMessage)
 {
     std::string buffer("Joselito");
     buffer.insert(0, 1, char(MSG_LOGIN_TYPE));
-    MessageRequest message = {0};
+    MessageRequest message{0};
 
     message.fromString(buffer);
 
@@ -21,7 +21,7 @@ TEST(MessageRequestTest, ParseLogoutMessage)
 {
     std::string buffer("Joselito");
     buffer.insert(0, 1, char(MSG_LOGOUT_TYPE));
-    MessageRequest message = {0};
+    MessageRequest message{0};
 
     message.fromString(buffer);
 
@@ -34,7 +34,7 @@ TEST(MessageRequestTest, ParseSendTextMessage)
 {
     std::string buffer("Joselito;Hi folks.");
     buffer.insert(0, 1, char(MSG_SEND_TEXT_TYPE));
-    MessageRequest message = {0};
+    MessageRequest message{0};
 
     message.fromString(buffer);
 
@@ -47,7 +47,7 @@ TEST(MessageRequestTest, ParseRemoveTextMessage)
 {
     std::string buffer("Joselito;25");
     buffer.insert(0, 1, char(MSG_REMOVE_TEXT_TYPE));
-    MessageRequest message = {0};
+    MessageRequest message{0};
 
     message.fromString(buffer);
 
@@ -58,7 +58,7 @@ TEST(MessageRequestTest, ParseRemoveTextMessage)
 
 TEST(MessageRequestTest, WhenTheMessageDoesNotComplyWithTheProtocol_ReturnsAnInvalidMessage)
 {
-    MessageRequest message = {0};
+    MessageRequest message{0};
 
     message.fromString("Any message.");
 
@@ -129,7 +129,7 @@ TEST(MessageRequestTest, BufferRemoveTextMessage)
 
 TEST(MessageRequestTest, WhenMessageIsInvalid_ReturnsAnEmptyBuffer)
 {
-    MessageRequest message = {0};
+    MessageRequest message{0};
 
     auto buffer = message.toString();
 

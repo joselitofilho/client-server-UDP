@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Repository.h"
+#include "core/constants.h"
 #include <hiredis/hiredis.h>
 
 namespace jungle
@@ -8,19 +9,19 @@ namespace jungle
     class RedisRepository : public Repository
     {
     public:
-        RedisRepository(const std::string &addr, int port, int capacity = 0);
-        RedisRepository(const RedisRepository &other) = delete;
+        RedisRepository(const std::string &t_addr, int t_port, int t_capacity = REDIS_UNLIMITED_CAPACITY);
+        RedisRepository(const RedisRepository &) = delete;
         RedisRepository &operator=(const RedisRepository &) = delete;
         ~RedisRepository();
 
         bool init();
 
     public:
-        // Repository interface methdos.
+        // Repository interface methods.
         Messages all();
-        long long create(Message &message);
+        long long create(Message &t_message);
         void clear();
-        bool remove(const Message &message);
+        bool remove(const Message &t_message);
 
     private:
         long long nextKey() const;
@@ -29,9 +30,9 @@ namespace jungle
         void trim() const;
 
     private:
-        const std::string addr;
-        int port;
-        int capacity;
-        redisContext *redisCtx;
+        const std::string m_addr{DEFAULT_SERVER_ADDR};
+        const int m_port{DEFAULT_SERVER_PORT};
+        const int m_capacity{REDIS_UNLIMITED_CAPACITY};
+        redisContext *m_redisCtx{nullptr};
     };
 }
