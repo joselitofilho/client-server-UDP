@@ -56,6 +56,33 @@ TEST(ControllerTest, OnRequestHandleForLoginBuffer_WhenRepositoryCreateFailed_Re
     EXPECT_EQ(invalidMessageExpected.toString(), message.toString());
 }
 
+TEST(ControllerTest, WhenClientSendsAMessage_ReturnsAValidResponse)
+{
+    struct sockaddr_in clientAddr;
+    std::string buffer("Joselito;Hi Folks.");
+    buffer.insert(0, 1, char(MSG_SEND_TEXT_TYPE));
+    std::time_t now = std::time(0);
+    Message messageExpected = {
+        0ll,
+        MSG_SEND_TEXT_TYPE,
+        now,
+        "Joselito",
+        "Hi Folks.",
+    };
+    NiceMock<MockRepository> mockRepository;
+    EXPECT_CALL(mockRepository, create(_))
+        .WillOnce(Return(1ll));
+
+    Controller controller(&mockRepository);
+    auto message = controller.onRequestHandle(buffer, clientAddr);
+    message.createdAt = now;
+
+    auto loggedUsers = controller.getLoggedUsers();
+    EXPECT_EQ(1, (int)loggedUsers.size());
+    EXPECT_TRUE(loggedUsers.find("Joselito") != loggedUsers.end());
+    EXPECT_EQ(messageExpected.toString(), message.toString());
+}
+
 TEST(ControllerTest, WhenAllClientsDisconnectTheDBIsFlushed)
 {
     struct sockaddr_in clientAddr;
