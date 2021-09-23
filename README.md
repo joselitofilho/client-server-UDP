@@ -23,6 +23,7 @@ For more informations, visit the docker oficial documentation [Manage Docker as 
 
 Projects contain a [`Makefile`](Makefile) that will install tools at versions defined at creation time. Those tools are:
 
+- [Redis](https://redis.io/)
 - [googletest and googlemock](https://github.com/google/googletest)
 - [hiredis](https://github.com/redis/hiredis)
 
