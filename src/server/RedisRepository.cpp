@@ -124,7 +124,7 @@ bool RedisRepository::ping() const
     auto *reply = (redisReply *)redisCommand(m_redisCtx, "PING");
     if (reply)
     {
-        isOK = strcmp(reply->str, "PONG");
+        isOK = strcmp(reply->str, "PONG") == 0;
     }
     freeReplyObject(reply);
 
