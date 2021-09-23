@@ -6,13 +6,15 @@ This project implements the communication between client and server via User Dat
 
 - [Prerequisites](#prerequisites)
     - [Versions and Supportability](#versions-and-supportability)
+- [Project structure](#project-structure)
 - [Build](#build)
 - [Run](#run)
 - [Tests](#tests)
 
 ## Prerequisites
 
-- [docker](https://docs.docker.com/install/) version 20.10+.
+- [Make](https://www.gnu.org/software/make/) version 4.2+
+- [Docker](https://docs.docker.com/install/) version 20.10+
 
 _NOTE_: To facilitate the execution of commands configure the docker to run without sudo.
 For more informations, visit the docker oficial documentation [Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/).
@@ -23,6 +25,18 @@ Projects contain a [`Makefile`](Makefile) that will install tools at versions de
 
 - [googletest and googlemock](https://github.com/google/googletest)
 - [hiredis](https://github.com/redis/hiredis)
+
+## Project structure
+
+| File or Folder | Description                                                              |
+| -------------- | ------------------------------------------------------------------------ |
+| bin/           | Where the application and test binaries will be generated.               |
+| libs/          | Contains statically linkable, lib files and is part of a library.        |
+| programs/      | Source code of the main application (client and server).                 |
+| src/           | Where the source codes is.                                               |
+| tests/         | All application tests.                                                   |
+| Dockerfile     | Used to create a docker image to help us build and run the applications. |
+| Makefile       | Contains a set of directives to build, test, and run the applications.   |
 
 ## Build
 
