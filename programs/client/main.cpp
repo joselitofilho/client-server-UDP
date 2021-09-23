@@ -4,6 +4,7 @@
 #include "client/UDPClient.h"
 
 using namespace std;
+using namespace jungle;
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +19,8 @@ int main(int argc, char *argv[])
     strncpy(username, argv[2], USERNAME_LEN);
 
     UDPClient client("127.0.0.1", serverPort);
-    if (!client.init()) {
+    if (!client.init())
+    {
         exit(EXIT_FAILURE);
     }
 

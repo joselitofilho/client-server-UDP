@@ -2,22 +2,26 @@
 
 #include "core/Message.h"
 
-class Chat
+namespace jungle
 {
-public:
-    Chat();
-    ~Chat();
+    class Chat
+    {
+    public:
+        Chat();
+        ~Chat();
 
-    void setServerIsOn(bool value) { serverIsOn = value; };
+        void setServerIsOn(bool value) { serverIsOn = value; };
 
-    void bye() const;
-    void clear() const;
-    void receive(const Message &message);
-    void render() const;
+        void bye() const;
+        void clear() const;
+        void receive(const Message &message);
+        void render() const;
 
-private:
-    bool serverIsOn;
-    Messages messages;
+    private:
+        void welcome() const;
 
-    void welcome() const;
-};
+    private:
+        bool serverIsOn;
+        Messages messages;
+    };
+}

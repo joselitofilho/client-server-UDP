@@ -4,6 +4,7 @@
 #include "server/RedisRepository.h"
 
 using namespace std;
+using namespace jungle;
 
 int main(int argc, char *argv[])
 {

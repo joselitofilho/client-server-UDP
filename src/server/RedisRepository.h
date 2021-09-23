@@ -3,32 +3,35 @@
 #include "Repository.h"
 #include <hiredis/hiredis.h>
 
-class RedisRepository : public Repository
+namespace jungle
 {
-public:
-    RedisRepository(const std::string &addr, int port, int capacity = 0);
-    ~RedisRepository();
+    class RedisRepository : public Repository
+    {
+    public:
+        RedisRepository(const std::string &addr, int port, int capacity = 0);
+        RedisRepository(const RedisRepository &other) = delete;
+        RedisRepository &operator=(const RedisRepository &) = delete;
+        ~RedisRepository();
 
-    bool init();
+        bool init();
 
-public:
-    /**
-     * Repository interface
-     */
-    Messages all();
-    long long create(Message &message);
-    void clear();
-    bool remove(const Message &message);
+    public:
+        // Repository interface methdos.
+        Messages all();
+        long long create(Message &message);
+        void clear();
+        bool remove(const Message &message);
 
-private:
-    long long nextKey() const;
-    bool ping() const;
-    int rangeStop() const;
-    void trim() const;
+    private:
+        long long nextKey() const;
+        bool ping() const;
+        int rangeStop() const;
+        void trim() const;
 
-private:
-    const std::string addr;
-    int port;
-    int capacity;
-    redisContext *redisCtx;
-};
+    private:
+        const std::string addr;
+        int port;
+        int capacity;
+        redisContext *redisCtx;
+    };
+}

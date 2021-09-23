@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cstring>
 
+using namespace jungle;
+
 RedisRepository::RedisRepository(const std::string &addr_, int port_, int capacity_)
     : addr(addr_), port(port_), capacity(capacity_), redisCtx(nullptr)
 {

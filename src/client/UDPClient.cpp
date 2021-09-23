@@ -6,6 +6,8 @@
 #include <string.h>
 #include <thread>
 
+using namespace jungle;
+
 UDPClient::UDPClient(const std::string &addr_, int serverPort_)
     : addr(addr_), serverPort(serverPort_), socketfd(-1), stop(false), chat()
 {

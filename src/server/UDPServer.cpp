@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 
+using namespace jungle;
+
 UDPServer::UDPServer(const std::string &addr_, int port_, Controller &controller_)
     : addr(addr_), port(port_), socketfd(-1), controller(controller_)
 {

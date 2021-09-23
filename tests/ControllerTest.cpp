@@ -8,6 +8,8 @@ using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::Return;
 
+using namespace jungle;
+
 TEST(ControllerTest, OnRequestHandleForLoginBuffer)
 {
     struct sockaddr_in clientAddr;

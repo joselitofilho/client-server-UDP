@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include "core/Message.h"
 
+using namespace jungle;
+
 TEST(MessageRequestTest, ParseLoginMessage)
 {
     std::string buffer("Joselito");

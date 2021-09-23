@@ -1,5 +1,7 @@
 #include "Controller.h"
 
+using namespace jungle;
+
 Controller::Controller(Repository *repository_ = nullptr)
     : repository(repository_), loggedUsers()
 {

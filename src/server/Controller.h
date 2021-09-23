@@ -6,20 +6,25 @@
 #include "core/Message.h"
 #include "Repository.h"
 
-typedef std::map<std::string, struct sockaddr_in> SocketUsers;
-
-class Controller
+namespace jungle
 {
-public:
-    Controller(Repository *repository);
-    ~Controller();
+    typedef std::map<std::string, struct sockaddr_in> SocketUsers;
 
-    const SocketUsers &getLoggedUsers() const { return loggedUsers; };
-    Messages getMessages() const;
+    class Controller
+    {
+    public:
+        Controller(Repository *repository);
+        Controller(const Controller &other) = delete;
+        Controller &operator=(const Controller &) = delete;
+        ~Controller();
 
-    Message onRequestHandle(const std::string &buffer, struct sockaddr_in clientAddr);
+        const SocketUsers &getLoggedUsers() const { return loggedUsers; };
+        Messages getMessages() const;
 
-private:
-    Repository *repository;
-    SocketUsers loggedUsers;
-};
+        Message onRequestHandle(const std::string &buffer, struct sockaddr_in clientAddr);
+
+    private:
+        Repository *repository;
+        SocketUsers loggedUsers;
+    };
+}

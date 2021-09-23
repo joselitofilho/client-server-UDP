@@ -1,5 +1,7 @@
 #include "Chat.h"
 
+using namespace jungle;
+
 Chat::Chat()
     : serverIsOn(false), messages()
 {
